@@ -82,7 +82,8 @@ function icon(name) {
 
 // A clickable control: the one place the two versions differ for buttons.
 //   key      stable id, used to restore keyboard focus after a redraw
-//   label    accessible name (accessible version only)
+//   label    accessible name, given only where the visible content is not
+//            enough of a name on its own (icon-only buttons, calendar days)
 //   role     ARIA role, when it is not a plain button
 //   stateAs  'pressed' or 'checked': which ARIA state mirrors `on`
 //   on       selected / ticked
@@ -154,7 +155,7 @@ function calendarSection() {
         {
           key: `day-${iso}`,
           cls: 'day',
-          label: bookable ? longDate(iso) : `${longDate(iso)}, not available`,
+          label: longDate(iso),
           stateAs: 'pressed',
           on: state.date === iso,
           off: !bookable,
@@ -189,7 +190,6 @@ function timeSection() {
             key: `slot-${slot.id}`,
             cls: 'slot',
             role: 'radio',
-            label: sold ? `${slot.label}, sold out` : slot.label,
             stateAs: 'checked',
             on: state.slot === slot.id,
             off: sold,
@@ -235,7 +235,6 @@ function bathSection() {
           key: `bath-${bath.id}`,
           cls: 'card',
           role: 'radio',
-          label: `${bath.name}, $${bath.price} per guest. ${bath.blurb}`,
           stateAs: 'checked',
           on: state.bath === bath.id,
           onClick: () => {
@@ -253,9 +252,9 @@ function bathSection() {
   return section('bath', '4. Choose your bath', cards, errorNote('bath'));
 }
 
-function checkRow({ key, label, text, extra, on, onClick }) {
+function checkRow({ key, text, extra, on, onClick }) {
   return control(
-    { key, cls: 'check', role: 'checkbox', label, stateAs: 'checked', on, onClick },
+    { key, cls: 'check', role: 'checkbox', stateAs: 'checked', on, onClick },
     h('span', { class: 'box' }, on ? icon('tick') : null),
     h('span', { class: 'check-text' }, text),
     extra ? h('span', { class: 'check-extra' }, extra) : null,
@@ -269,7 +268,6 @@ function extrasSection() {
     ADDONS.map((addon) =>
       checkRow({
         key: `addon-${addon.id}`,
-        label: `${addon.name}, $${addon.price}`,
         text: addon.name,
         extra: `+$${addon.price}`,
         on: state.addons.has(addon.id),
@@ -318,7 +316,6 @@ function contactSection() {
 function rulesAndSubmit() {
   const rules = checkRow({
     key: 'rules',
-    label: 'I accept the house rules: shower first, no splashing, be kind to capybaras.',
     text: 'I accept the house rules: shower first, no splashing, be kind to capybaras.',
     on: state.rules,
     onClick: () => {

@@ -75,6 +75,7 @@ if (existsSync(BOOKINGS_FILE)) {
 // ---- helpers --------------------------------------------------------------
 
 const servedVariant = new Map(); // guest id -> variant they were shown
+let flagFallbacks = 0; // visitors served the control because Flagsmith could not be reached
 
 function parseCookies(header = '') {
   return Object.fromEntries(
@@ -103,11 +104,14 @@ async function variantFor(guestId) {
   try {
     // Evaluates the flag for this identity and records the experiment exposure.
     const flag = await flagsmith.getExperimentFlag(FLAG, guestId);
-    const value = VARIANTS.includes(flag.value) ? flag.value : CONTROL;
+    // A disabled flag means "off": serve the control, whatever value it carries.
+    const value = flag.enabled && VARIANTS.includes(flag.value) ? flag.value : CONTROL;
     servedVariant.set(guestId, value);
     return value;
   } catch (err) {
     // If Flagsmith is unreachable the site still works, on the control version.
+    // That visitor has no exposure, so they are not part of the experiment.
+    flagFallbacks++;
     console.error(`flag evaluation failed for ${guestId}: ${err.message}`);
     return CONTROL;
   }
@@ -121,7 +125,17 @@ app.use(express.json({ limit: '20kb' }));
 app.use('/static', express.static(join(HERE, 'public')));
 app.use('/shared', express.static(join(HERE, 'shared')));
 
-app.get('/healthz', (_req, res) => res.json({ ok: true, env: config.envName }));
+// Health. `flagsmith` says whether flags can be evaluated right now (checked
+// without recording an exposure) and `flagFallbacks` counts visitors who were
+// served the control because they could not. An experiment run should see
+// flagsmith=true before it starts and flagFallbacks unchanged when it ends.
+app.get('/healthz', async (_req, res) => {
+  const flagsmithOk = await flagsmith
+    .getEnvironmentFlags()
+    .then(() => true)
+    .catch(() => false);
+  res.json({ ok: true, env: config.envName, flagsmith: flagsmithOk, flagFallbacks });
+});
 
 app.get('/', identify, (_req, res) => res.send(landingPage()));
 

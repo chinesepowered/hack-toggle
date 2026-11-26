@@ -1,0 +1,435 @@
+#!/usr/bin/env bash
+# fx: run one Flagsmith experiment from plan to rollout, on the Flagsmith CLI.
+#
+#   fx setup    write the experiment spec; create the flag, variation and metrics. Changes nothing users see.
+#   fx check    pre-launch checks; fails loudly on the things that otherwise fail silently
+#   fx start    create and start the experiment      (needs --approved-by)
+#   fx status   one line: state and exposures per variation
+#   fx results  refresh, then one line per metric with a verdict
+#   fx ship     end the experiment and roll out a winner (needs --approved-by)
+#   fx stop     end the experiment and put everyone back on the control (always allowed)
+#
+# Requires: flagsmith (CLI v2+), jq.
+# Context:  FLAGSMITH_ENVIRONMENT (client-side environment key) or -e KEY, plus
+#           whatever the CLI itself needs (flagsmith.json or FLAGSMITH_PROJECT,
+#           and credentials). `flagsmith auth status` shows what it has.
+#
+# Output is terse on purpose: one fact per line and no JSON, so an agent reading
+# it spends few tokens. Exit status is non-zero whenever a step did not succeed.
+
+set -euo pipefail
+
+die() {
+  printf 'fx: %s\n' "$*" >&2
+  exit 1
+}
+need() { command -v "$1" >/dev/null 2>&1 || die "'$1' is required but not installed"; }
+
+usage() {
+  sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//'
+  cat <<'EOF'
+
+Options:
+  -e, --env KEY            client-side environment key (default: $FLAGSMITH_ENVIRONMENT)
+      --flag NAME          the feature flag the experiment runs on (every command)
+      --spec FILE          experiment spec (default: experiments/<flag>.json)
+  setup (omit these to apply an existing spec to another environment):
+      --control VALUE      the flag's current value, served to the control group
+      --variant KEY=VALUE  the variation to test (KEY alone means VALUE=KEY)
+      --split PCT          share of enrolled identities given the variation (default 50)
+      --rollout PCT        share of all identities enrolled (default 100)
+      --metric SPEC        EVENT:AGGREGATION:DIRECTION:EXPECTED[:Display name]; repeatable, primary first
+                           AGGREGATION occurrence|count|sum|mean   DIRECTION up|down|informational
+                           EXPECTED increase|decrease|not_increase|not_decrease
+      --name TEXT          experiment name
+      --hypothesis TEXT    what you expect and why
+  start, ship:
+      --approved-by NAME   the person who approved this change. Never invent one.
+  start, ship, stop:
+      --log FILE           append the action to this file (default ./experiment-approvals.log)
+  ship:
+      --winner control|KEY which variation everyone gets from now on
+      --force              ship even if the primary metric is not conclusive
+EOF
+}
+
+# ---- arguments ---------------------------------------------------------------
+
+[ $# -ge 1 ] || { usage; exit 1; }
+CMD=$1
+shift
+ENVK=${FLAGSMITH_ENVIRONMENT:-}
+FLAG="" SPEC="" CONTROL="" VARIANT="" SPLIT=50 ROLLOUT=100 NAME="" HYPOTHESIS="" APPROVER="" WINNER="" FORCE=0
+LOG=./experiment-approvals.log
+METRICS=()
+while [ $# -gt 0 ]; do
+  case $1 in
+    -e | --env) ENVK=$2; shift 2 ;;
+    --flag) FLAG=$2; shift 2 ;;
+    --spec) SPEC=$2; shift 2 ;;
+    --control) CONTROL=$2; shift 2 ;;
+    --variant) VARIANT=$2; shift 2 ;;
+    --split) SPLIT=$2; shift 2 ;;
+    --rollout) ROLLOUT=$2; shift 2 ;;
+    --metric) METRICS+=("$2"); shift 2 ;;
+    --name) NAME=$2; shift 2 ;;
+    --hypothesis) HYPOTHESIS=$2; shift 2 ;;
+    --approved-by) APPROVER=$2; shift 2 ;;
+    --winner) WINNER=$2; shift 2 ;;
+    --log) LOG=$2; shift 2 ;;
+    --force) FORCE=1; shift ;;
+    -h | --help) usage; exit 0 ;;
+    *) die "unknown option: $1 (try: fx --help)" ;;
+  esac
+done
+case $CMD in -h | --help | help) usage; exit 0 ;; esac
+
+need flagsmith
+need jq
+[ -n "$ENVK" ] || die "no environment: pass -e KEY or set FLAGSMITH_ENVIRONMENT"
+[ -n "$FLAG" ] || die "--flag is required"
+export FLAGSMITH_ENVIRONMENT=$ENVK
+SPEC=${SPEC:-experiments/$FLAG.json}
+
+# ---- helpers -----------------------------------------------------------------
+
+# api PATH [flagsmith-api-args...]: call an endpoint under this environment.
+api() {
+  local path=$1
+  shift
+  flagsmith api "api/v1/environments/$ENVK/$path" "$@"
+}
+
+ROWS='(if type == "array" then . else (.results // []) end)'
+
+feature_json() { flagsmith feature get "$FLAG" --json 2>/dev/null || true; }
+spec() { jq -r "$1" "$SPEC"; }
+require_spec() { [ -f "$SPEC" ] || die "no spec at $SPEC. Run: fx setup"; }
+
+# Sets XID and XSTATUS to the experiment on this flag that is not finished, if any.
+find_experiment() {
+  FEATURE=$(feature_json)
+  [ -n "$FEATURE" ] || die "flag '$FLAG' does not exist. Run: fx setup"
+  FID=$(jq -r .id <<<"$FEATURE")
+  XID="" XSTATUS=""
+  read -r XID XSTATUS < <(api experiments/ --jq "[$ROWS[] | select(.feature.id == $FID and .status != \"completed\")][0] | if . then \"\(.id) \(.status)\" else empty end") || true
+}
+require_experiment() {
+  find_experiment
+  [ -n "$XID" ] || die "no experiment is running on '$FLAG'"
+}
+
+# Starting and shipping change what real users are served, so a named person
+# must approve them. The one exception is an environment a person has listed in
+# FX_UNATTENDED_ENVS (environment keys, space-separated): a sandbox where an
+# agent may run the whole loop on its own, for example to rehearse in staging.
+require_approval() {
+  if [ -z "$APPROVER" ] && [[ " ${FX_UNATTENDED_ENVS:-} " == *" $ENVK "* ]]; then
+    APPROVER="unattended (environment listed in FX_UNATTENDED_ENVS)"
+    return
+  fi
+  [ -n "$APPROVER" ] || die "this changes what real users are served. Stop, show the user the output of 'fx $1', and ask them to approve. Then re-run with --approved-by '<their name>'."
+}
+
+record() {
+  printf '%s\t%s\tenv=%s\tflag=%s\texperiment=%s\tby=%s\t%s\n' \
+    "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$1" "$ENVK" "$FLAG" "$XID" "${APPROVER:-n/a}" "${2:-}" >>"$LOG"
+  echo "recorded in $LOG"
+}
+
+# What do fresh identities get right now? Evaluates 20 throwaway identities
+# (transiently: nothing is stored and no exposure is counted) and prints
+# "<served the control> <served something else>". A disabled flag counts as
+# the control, because that is how an application must treat it.
+probe_split() {
+  local control_value=$1 i line c=0 v=0
+  for i in $(seq 1 20); do
+    line=$(flagsmith evaluate "$FLAG" --identity "fx-probe-$RANDOM-$i" --jq '"\(.enabled) \(.value)"' 2>/dev/null || echo '? ?')
+    if [ "$line" = "true $control_value" ] || [ "${line%% *}" = false ]; then c=$((c + 1)); else v=$((v + 1)); fi
+  done
+  echo "$c $v"
+}
+
+# ---- setup -------------------------------------------------------------------
+
+cmd_setup() {
+  # Write the spec from the options, unless we are applying an existing one.
+  if [ -n "$CONTROL$VARIANT$NAME$HYPOTHESIS" ] || [ ${#METRICS[@]} -gt 0 ]; then
+    [ -n "$CONTROL" ] || die "setup needs --control VALUE"
+    [ -n "$VARIANT" ] || die "setup needs --variant KEY=VALUE"
+    [ ${#METRICS[@]} -gt 0 ] || die "setup needs at least one --metric"
+    [ -n "$NAME" ] && [ -n "$HYPOTHESIS" ] || die "setup needs --name and --hypothesis"
+    local vkey=${VARIANT%%=*} metrics='[]' m event agg dir exp label
+    [ "$vkey" != control ] || die "'control' is reserved for the flag's own value; choose another variation key"
+    for m in "${METRICS[@]}"; do
+      IFS=: read -r event agg dir exp label <<<"$m"
+      [ -n "${exp:-}" ] || die "bad --metric '$m' (want EVENT:AGGREGATION:DIRECTION:EXPECTED)"
+      metrics=$(jq -c --arg e "$event" --arg a "$agg" --arg d "$dir" --arg x "$exp" --arg n "${label:-$event}" \
+        '. + [{event: $e, aggregation: $a, direction: $d, expected: $x, name: $n}]' <<<"$metrics")
+    done
+    mkdir -p "$(dirname "$SPEC")"
+    jq -n --arg f "$FLAG" --arg c "$CONTROL" --arg k "$vkey" --arg v "${VARIANT#*=}" --argjson s "$SPLIT" --argjson r "$ROLLOUT" \
+      --argjson m "$metrics" --arg n "$NAME" --arg h "$HYPOTHESIS" \
+      '{flag: $f, control: $c, variation: {key: $k, value: $v}, split: $s, rollout: $r, metrics: $m, name: $n, hypothesis: $h}' >"$SPEC"
+    echo "spec written to $SPEC (commit it: it is the plan a person approves)"
+  fi
+  require_spec
+  [ "$(spec .flag)" = "$FLAG" ] || die "$SPEC is for flag '$(spec .flag)', not '$FLAG'"
+
+  # Flag: created enabled with the control value. An existing flag is left alone.
+  FEATURE=$(feature_json)
+  if [ -z "$FEATURE" ]; then
+    flagsmith feature create "$FLAG" --value "$(spec .control)" --enabled >/dev/null
+    FEATURE=$(feature_json)
+  fi
+
+  # Variation: added with weight 0, so nobody is served it yet. It must have a
+  # key, or its exposures are silently not recorded.
+  local vkey vid
+  vkey=$(spec .variation.key)
+  vid=$(jq -r --arg k "$vkey" '.variants // [] | map(select(.key == $k))[0].id // empty' <<<"$FEATURE")
+  if [ -z "$vid" ]; then
+    flagsmith feature variant add "$FLAG" --value "$(spec .variation.value)" --key "$vkey" --weight 0 >/dev/null
+  fi
+  echo "flag $FLAG control=$(spec .control) variation=$vkey"
+
+  # Metrics, matched by event name so that re-running never duplicates them.
+  local existing
+  existing=$(api experiment-metrics/ --jq "[$ROWS[] | .definition.event]")
+  while IFS=$'\t' read -r event agg dir name; do
+    if [ "$(jq -r --arg e "$event" 'index($e) != null' <<<"$existing")" != true ]; then
+      jq -n --arg n "$name" --arg a "$agg" --arg d "$dir" --arg e "$event" \
+        '{name: $n, aggregation: $a, direction: $d, definition: {version: 1, event: $e}}' |
+        api experiment-metrics/ --input - >/dev/null
+    fi
+    echo "metric $event $agg"
+  done < <(spec '.metrics[] | [.event, .aggregation, .direction, .name] | @tsv')
+  echo "nothing users see has changed. next: send a test conversion through your app here, then: fx check"
+}
+
+# ---- check -------------------------------------------------------------------
+
+cmd_check() {
+  local failed=0 line
+  ok() { echo "ok    $*"; }
+  bad() {
+    echo "FAIL  $*"
+    failed=1
+  }
+  require_spec
+  find_experiment
+
+  # Warehouse: without one, every event is dropped without an error.
+  WID="" WSTATUS=""
+  read -r WID WSTATUS < <(api warehouse-connections/ --jq "$ROWS[0] | if . then \"\(.id) \(.status)\" else empty end") || true
+  if [ "$WSTATUS" = connected ]; then ok "warehouse connected"; else bad "warehouse ${WSTATUS:-missing}: connect one under Environment Settings > Warehouse"; fi
+
+  # Variation: one without a key records no exposures.
+  line=$(jq -r --arg k "$(spec .variation.key)" '[.variants[]? | select(.key == $k)] | length' <<<"$FEATURE")
+  if [ "$line" = 1 ]; then ok "variation '$(spec .variation.key)' exists and has a key"; else bad "flag $FLAG has no variation with key '$(spec .variation.key)'. Run: fx setup"; fi
+
+  # Metric events. A misspelt event name is accepted and never counted, so
+  # insist that each event has actually arrived in this environment's warehouse.
+  local seen="" metrics event
+  [ -z "$WID" ] || seen=$(api "warehouse-connections/$WID/events/" --jq '.events // [] | join("\n")' 2>/dev/null || true)
+  metrics=$(api experiment-metrics/ --jq "[$ROWS[] | .definition.event]")
+  while read -r event; do
+    if [ "$(jq -r --arg e "$event" 'index($e) != null' <<<"$metrics")" != true ]; then
+      bad "no metric for event '$event' in this environment. Run: fx setup"
+    elif grep -qxF "$event" <<<"$seen"; then
+      ok "event '$event' has been received here"
+    else
+      bad "event '$event' has never been received here: check the name in your code (case-sensitive) and send a test conversion"
+    fi
+  done < <(spec '.metrics[].event')
+
+  # What users get right now.
+  local c v
+  read -r c v < <(probe_split "$(spec .control)")
+  if [ -n "$XID" ]; then
+    echo "note  experiment id=$XID is already $XSTATUS; of 20 probe identities $c get the control and $v the variation"
+  elif [ "$v" -eq 0 ]; then
+    ok "nothing has changed for users yet: 20 of 20 probe identities get the control ($(spec .control))"
+  else
+    bad "$v of 20 probe identities do not get the control ($(spec .control)), although no experiment is running"
+  fi
+
+  [ $failed -eq 0 ] || die "pre-launch checks failed; fix them before starting"
+  [ -n "$XID" ] || echo "ready. Starting changes what users are served: show the user $SPEC and this output, ask, then: fx start --approved-by NAME"
+}
+
+# ---- start / stop ------------------------------------------------------------
+
+cmd_start() {
+  require_approval check
+  cmd_check >/dev/null || die "pre-launch checks failed. Run: fx check"
+  [ -z "$XID" ] || die "experiment id=$XID on '$FLAG' is already $XSTATUS"
+
+  local fid vid body
+  fid=$(jq -r .id <<<"$FEATURE")
+  vid=$(jq -r --arg k "$(spec .variation.key)" '.variants | map(select(.key == $k))[0].id' <<<"$FEATURE")
+  body=$(jq -c --argjson f "$fid" --argjson v "$vid" --argjson ids "$(api experiment-metrics/ --jq "[$ROWS[] | {key: .definition.event, value: .id}] | from_entries")" '
+    {feature: $f, name, hypothesis,
+     metrics: [.metrics[] | {metric: $ids[.event], expected_direction: .expected}],
+     experiment_rollout: {enabled: true, rollout_percentage: .rollout,
+       feature_state_value: {type: "string", value: .control},
+       multivariate_feature_state_values: [{multivariate_feature_option: $v, percentage_allocation: .split}]}}' "$SPEC")
+
+  # Creating an experiment already serves the variation, so create and start
+  # back to back, and remove it again if the start does not go through.
+  XID=$(api experiments/ --input - --jq .id <<<"$body")
+  if ! api "experiments/$XID/start/" -X POST --jq '"experiment id=\(.id) status=\(.status) started=\(.started_at)"'; then
+    api "experiments/$XID/" -X DELETE >/dev/null 2>&1 || true
+    die "could not start the experiment; it was removed again and nothing has changed for users"
+  fi
+  local c v
+  read -r c v < <(probe_split "$(spec .control)")
+  echo "live: of 20 probe identities $c get the control and $v the variation (configured $((100 - $(spec .split)))/$(spec .split))"
+  record start "spec=$SPEC"
+}
+
+cmd_stop() {
+  require_experiment
+  api "experiments/$XID/complete/" --input - --jq '"experiment id=\(.id) status=\(.status) decision=\(.rollout_decision)"' <<<'{"rollout_decision": "control"}'
+  local c v
+  read -r c v < <(probe_split "$(spec .control 2>/dev/null || jq -r .default_value <<<"$FEATURE")")
+  echo "everyone is back on the control: $c of 20 probe identities"
+  APPROVER=${APPROVER:-not required to stop}
+  record stop
+}
+
+# ---- status ------------------------------------------------------------------
+
+cmd_status() {
+  require_experiment
+  api "experiments/$XID/exposures/refresh/" -X POST >/dev/null 2>&1 || true
+  sleep 2
+  local exposures
+  exposures=$(api "experiments/$XID/exposures/" --jq '
+    [.exposures.payload.timeseries.points[]?.new_identities | to_entries[]] | group_by(.key)
+    | map("\(.[0].key)=\(map(.value) | add)") | join(" ")')
+  echo "experiment id=$XID status=$XSTATUS exposures: ${exposures:-none yet}"
+}
+
+# ---- results -----------------------------------------------------------------
+
+# One line per metric, then the sample-ratio check, e.g.
+#   Booking correct  control 34/61 55.7%  accessible 62/79 78.5%  lift +40.8% [+5.1%, +76.5%]  chance 98.7%  WINNING
+#   sample ratio: ok (control 61 / variation 79, expected 50/50, p=0.128)
+#
+# Verdicts follow Flagsmith's documented thresholds: at least 95% chance to beat
+# the control is WINNING, at most 5% is LOSING. A guardrail (expected
+# not_increase / not_decrease) is BREACHED only when it is confidently worse.
+#
+# The sample-ratio line is computed here, from the exposures and the split the
+# experiment was configured with (chi-squared, 1 degree of freedom). Flagsmith
+# 2.295 tests against the flag's default allocation instead, which is 0 when the
+# variation was added with weight 0, so it reports nothing in that set-up. If
+# Flagsmith does report a value, that value is used.
+RESULTS_JQ='
+def pct: (. * 1000 | round) / 10 | tostring + "%";
+def signed: if . >= 0 then "+" + pct else pct end;
+def p3: (. * 1000 | round) / 1000;
+def arm($agg): if $agg == "occurrence" then "\(.sum | round)/\(.n) \(.sum / .n | pct)" else "n=\(.n) mean \((.sum / .n * 100 | round) / 100)" end;
+def sample_ratio($x; $p):
+  ($x.experiment_rollout.multivariate_feature_state_values[0].percentage_allocation / 100) as $s
+  | ($p.metrics[0].variants // {}) as $v
+  | ($v.control.n // 0) as $c
+  | ([$v | to_entries[] | select(.key != "control") | .value.n] | add // 0) as $t
+  | ($c + $t) as $n
+  | if $p.srm_p_value != null then
+      "sample ratio: \(if $p.srm_p_value < 0.001 then "MISMATCH - do not trust these results" else "ok" end) (p=\($p.srm_p_value | p3))"
+    elif $n < 100 or $s <= 0 or $s >= 1 then "sample ratio: not checked yet (needs 100 identities)"
+    else (($c - $n * (1 - $s)) as $dc | ($t - $n * $s) as $dt
+      | (($dc * $dc / ($n * (1 - $s)) + $dt * $dt / ($n * $s)) / 2 | sqrt | erfc) as $pv
+      | "sample ratio: \(if $pv < 0.001 then "MISMATCH - do not trust these results" else "ok" end) (control \($c) / variation \($t), expected \((1 - $s) * 100 | round)/\($s * 100 | round), p=\($pv | p3))")
+    end;
+($x.metrics | map({key: (.metric | tostring), value: .}) | from_entries) as $meta
+| .results.payload as $p
+| if $p == null then "no results yet" else
+  ($p.metrics[] |
+    ($meta[.metric_id | tostring]) as $m
+    | (.variants | to_entries | map("\(.key) \(.value | arm($m.aggregation))") | join("  ")) as $arms
+    | (.inference // {} | to_entries | map(select(.value != null)) | map(
+        .value as $i
+        | (if ($m.expected_direction | startswith("not_")) then (if $i.chance_to_win <= 0.05 then "GUARDRAIL BREACHED" else "guardrail ok" end)
+           elif $i.chance_to_win >= 0.95 then "WINNING" elif $i.chance_to_win <= 0.05 then "LOSING" else "inconclusive" end) as $v
+        | "lift \($i.lift | signed) [\($i.ci_low | signed), \($i.ci_high | signed)]  chance \($i.chance_to_win | pct)  \($v)"
+      ) | join("  ")) as $inf
+    | "\($m.metric_name)  \($arms)  \(if $inf == "" then "collecting data (needs 50 identities and 5 conversions per variation)" else $inf end)"),
+  sample_ratio($x; $p),
+  "as of \(.results.as_of)\(if .results.is_final then " (final)" else "" end)"
+  end'
+
+fetch_results() {
+  local experiment
+  experiment=$(api "experiments/$XID/")
+  api "experiments/$XID/results/" | jq -r --argjson x "$experiment" "$RESULTS_JQ"
+}
+
+cmd_results() {
+  require_experiment
+  local before after tries=0
+  before=$(api "experiments/$XID/results/" --jq '.results.as_of // "none"')
+  # Refreshes are limited to one every 5 minutes; a throttled call is not an error.
+  if api "experiments/$XID/results/refresh/" -X POST >/dev/null 2>&1; then
+    while [ $tries -lt 15 ]; do
+      sleep 2
+      after=$(api "experiments/$XID/results/" --jq '.results.as_of // "none"')
+      [ "$after" = "$before" ] || break
+      tries=$((tries + 1))
+    done
+  else
+    echo "note: refresh throttled (once per 5 minutes); showing the last computed results"
+  fi
+  fetch_results
+}
+
+# ---- ship --------------------------------------------------------------------
+
+cmd_ship() {
+  [ -n "$WINNER" ] || die "ship needs --winner control|KEY"
+  require_experiment
+  local summary primary body vid served_value
+  summary=$(fetch_results)
+  primary=$(head -n 1 <<<"$summary")
+  if [ $FORCE -eq 0 ]; then
+    case $primary in
+      *WINNING*) [ "$WINNER" != control ] || die "the primary metric favours the variation, but --winner is control. Use --force if that is intended." ;;
+      *LOSING*) [ "$WINNER" = control ] || die "the primary metric says the variation is losing. Ship control, or use --force." ;;
+      *) die "the primary metric is not conclusive: $primary. Keep collecting, or use --force." ;;
+    esac
+    ! grep -q 'MISMATCH' <<<"$summary" || die "sample ratio mismatch: the split is broken, so the results cannot be trusted"
+    ! grep -q 'GUARDRAIL BREACHED' <<<"$summary" || [ "$WINNER" = control ] || die "a guardrail metric is breached. Ship control, or use --force after the user has accepted the trade-off."
+  fi
+  require_approval results
+
+  if [ "$WINNER" = control ]; then
+    body='{"rollout_decision": "control"}'
+    served_value=$(api "experiments/$XID/" --jq .experiment_rollout.feature_state_value.value)
+  else
+    vid=$(jq -r --arg k "$WINNER" '.variants // [] | map(select(.key == $k))[0].id // empty' <<<"$FEATURE")
+    [ -n "$vid" ] || die "'$WINNER' is not a variation key of $FLAG"
+    body=$(jq -n --argjson v "$vid" '{rollout_decision: "variant", rollout_variant: $v}')
+    served_value=$(jq -r --arg k "$WINNER" '.variants | map(select(.key == $k))[0].value' <<<"$FEATURE")
+  fi
+  api "experiments/$XID/complete/" --input - --jq '"experiment id=\(.id) status=\(.status) decision=\(.rollout_decision)"' <<<"$body"
+
+  # Prove it: fresh identities must now all be served the winner.
+  local c v
+  read -r c v < <(probe_split "$served_value")
+  echo "rolled out: $c of 20 probe identities now get '$served_value'"
+  record ship "winner=$WINNER"
+  echo "next: delete the losing code path, then retire the flag"
+}
+
+case $CMD in
+  setup) cmd_setup ;;
+  check) cmd_check ;;
+  start) cmd_start ;;
+  stop) cmd_stop ;;
+  status) cmd_status ;;
+  results) cmd_results ;;
+  ship) cmd_ship ;;
+  *) die "unknown command: $CMD (try: fx --help)" ;;
+esac

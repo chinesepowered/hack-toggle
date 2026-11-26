@@ -51,9 +51,9 @@
       - heading "2. Pick a time" [level=2] [ref=e197]
       - radiogroup "Time on Saturday 12 December 2026" [ref=e198]:
         - radio "10:00 AM" [checked] [ref=e199] [cursor=pointer]
-        - radio "11:30 AM, sold out" [disabled] [ref=e200]: 11:30 AM
+        - radio "11:30 AM" [disabled] [ref=e200]
         - radio "1:00 PM" [ref=e201] [cursor=pointer]
-        - radio "2:30 PM, sold out" [disabled] [ref=e202]: 2:30 PM
+        - radio "2:30 PM" [disabled] [ref=e202]
         - radio "4:00 PM" [ref=e203] [cursor=pointer]
         - radio "5:30 PM" [ref=e204] [cursor=pointer]
         - radio "7:00 PM" [ref=e205] [cursor=pointer]
@@ -66,28 +66,28 @@
     - region [ref=e217]:
       - heading "4. Choose your bath" [level=2] [ref=e218]
       - radiogroup "Bath" [ref=e219]:
-        - radio "Yuzu Bath, $28 per guest. Open-air pool with floating yuzu" [ref=e220] [cursor=pointer]:
+        - radio "Yuzu Bath Open-air pool with floating yuzu $28 per guest" [ref=e220] [cursor=pointer]:
           - generic [ref=e221]: Yuzu Bath
           - generic [ref=e222]: Open-air pool with floating yuzu
           - generic [ref=e223]: $28 per guest
-        - radio "Cedar Tub, $34 per guest. Private soaking tub, cedar-scented" [checked] [ref=e224] [cursor=pointer]:
+        - radio "Cedar Tub Private soaking tub, cedar-scented $34 per guest" [checked] [ref=e224] [cursor=pointer]:
           - generic [ref=e225]: Cedar Tub
           - generic [ref=e226]: Private soaking tub, cedar-scented
           - generic [ref=e227]: $34 per guest
-        - radio "Moonlight Pool, $42 per guest. Rooftop pool under the stars" [ref=e228] [cursor=pointer]:
+        - radio "Moonlight Pool Rooftop pool under the stars $42 per guest" [ref=e228] [cursor=pointer]:
           - generic [ref=e229]: Moonlight Pool
           - generic [ref=e230]: Rooftop pool under the stars
           - generic [ref=e231]: $42 per guest
     - region [ref=e232]:
       - heading "5. Extras" [level=2] [ref=e233]
       - group "Extras" [ref=e234]:
-        - checkbox "Towel set, $6" [ref=e235] [cursor=pointer]:
+        - checkbox "Towel set +$6" [ref=e235] [cursor=pointer]:
           - generic [ref=e237]: Towel set
           - generic [ref=e238]: +$6
-        - checkbox "Yuzu tea service, $9" [checked] [ref=e239] [cursor=pointer]:
+        - checkbox "Yuzu tea service +$9" [checked] [ref=e239] [cursor=pointer]:
           - generic [ref=e244]: Yuzu tea service
           - generic [ref=e245]: +$9
-        - checkbox "Capybara plushie, $18" [ref=e246] [cursor=pointer]:
+        - checkbox "Capybara plushie +$18" [ref=e246] [cursor=pointer]:
           - generic [ref=e248]: Capybara plushie
           - generic [ref=e249]: +$18
     - region [ref=e250]:
