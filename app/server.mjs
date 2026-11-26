@@ -15,11 +15,13 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
 import { Flagsmith } from '@flagsmith/nodejs';
+import { loadDotEnv } from '../scripts/env.mjs';
 import { priceOf, toISO, validateBooking } from './shared/catalog.js';
 import { bookingPage, confirmationPage, landingPage, notFoundPage } from './views.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..');
+loadDotEnv();
 
 export const FLAG = 'booking_form';
 export const VARIANTS = ['classic', 'accessible'];

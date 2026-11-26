@@ -13,7 +13,8 @@
     "flagsmith:reset": "docker compose down -v && rm -rf .flagsmith",
     "bootstrap": "node scripts/bootstrap.mjs",
     "app": "node app/server.mjs",
-    "guests": "node guests/run.mjs",
+    "guests": "NODE_USE_ENV_PROXY=1 NODE_NO_WARNINGS=1 node guests/run.mjs",
+    "parity": "node scripts/parity.mjs",
     "test": "node --test"
   },
   "dependencies": {

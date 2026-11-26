@@ -394,13 +394,16 @@ cmd_ship() {
   summary=$(fetch_results)
   primary=$(head -n 1 <<<"$summary")
   if [ $FORCE -eq 0 ]; then
+    ! grep -q 'MISMATCH' <<<"$summary" || die "sample ratio mismatch: the split is broken, so the results cannot be trusted"
+    # A breached guardrail blocks the variation whichever metric it is on.
+    ! grep -q 'GUARDRAIL BREACHED' <<<"$summary" || [ "$WINNER" = control ] ||
+      die "a guardrail is breached: $(grep 'GUARDRAIL BREACHED' <<<"$summary" | sed 's/  .*//' | paste -sd, -). Ship control, or use --force once the user has accepted the trade-off."
     case $primary in
+      *"guardrail ok"*) ;; # a do-no-harm experiment: the primary only has to hold
       *WINNING*) [ "$WINNER" != control ] || die "the primary metric favours the variation, but --winner is control. Use --force if that is intended." ;;
       *LOSING*) [ "$WINNER" = control ] || die "the primary metric says the variation is losing. Ship control, or use --force." ;;
       *) die "the primary metric is not conclusive: $primary. Keep collecting, or use --force." ;;
     esac
-    ! grep -q 'MISMATCH' <<<"$summary" || die "sample ratio mismatch: the split is broken, so the results cannot be trusted"
-    ! grep -q 'GUARDRAIL BREACHED' <<<"$summary" || [ "$WINNER" = control ] || die "a guardrail metric is breached. Ship control, or use --force after the user has accepted the trade-off."
   fi
   require_approval results
 

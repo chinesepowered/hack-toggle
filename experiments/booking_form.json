@@ -1,0 +1,42 @@
+{
+  "flag": "booking_form",
+  "control": "classic",
+  "variation": {
+    "key": "accessible",
+    "value": "accessible"
+  },
+  "split": 50,
+  "rollout": 100,
+  "metrics": [
+    {
+      "event": "booking_correct",
+      "aggregation": "occurrence",
+      "direction": "up",
+      "expected": "not_decrease",
+      "name": "Booking correct"
+    },
+    {
+      "event": "booking_completed",
+      "aggregation": "occurrence",
+      "direction": "up",
+      "expected": "not_decrease",
+      "name": "Booking completed"
+    },
+    {
+      "event": "guest_steps",
+      "aggregation": "mean",
+      "direction": "down",
+      "expected": "not_increase",
+      "name": "Guest steps"
+    },
+    {
+      "event": "guest_tokens",
+      "aggregation": "mean",
+      "direction": "down",
+      "expected": "not_increase",
+      "name": "Guest tokens"
+    }
+  ],
+  "name": "Accessible booking form and AI guests",
+  "hypothesis": "The accessible booking form does not reduce correct bookings by AI guests compared with the classic form. Two staging pilots (140 guests) saw 100% correct bookings in both versions and about 18% more tokens per guest in the accessible version, so we expect bookings to hold and the token guardrail to be breached."
+}
