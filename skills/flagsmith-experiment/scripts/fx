@@ -45,6 +45,8 @@ Options:
       --hypothesis TEXT    what you expect and why
   start, ship:
       --approved-by NAME   the person who approved this change. Never invent one.
+                           Omit it only in an environment listed in FX_UNATTENDED_ENVS
+                           (space-separated environment keys a person has marked as sandboxes).
   start, ship, stop:
       --log FILE           append the action to this file (default ./experiment-approvals.log)
   ship:
@@ -118,13 +120,24 @@ require_experiment() {
   find_experiment
   [ -n "$XID" ] || die "no experiment is running on '$FLAG'"
 }
+# For read-only commands: the unfinished experiment, or else the latest finished one,
+# so results stay readable after a ship or a stop.
+find_latest_experiment() {
+  find_experiment
+  [ -n "$XID" ] || read -r XID XSTATUS < <(api experiments/ --jq "[$ROWS[] | select(.feature.id == $FID)] | sort_by(.id) | last | if . then \"\(.id) \(.status)\" else empty end") || true
+  [ -n "$XID" ] || {
+    echo "no experiment has been created on '$FLAG' yet"
+    exit 0
+  }
+}
+unattended() { [[ " ${FX_UNATTENDED_ENVS:-} " == *" $ENVK "* ]]; }
 
 # Starting and shipping change what real users are served, so a named person
 # must approve them. The one exception is an environment a person has listed in
 # FX_UNATTENDED_ENVS (environment keys, space-separated): a sandbox where an
 # agent may run the whole loop on its own, for example to rehearse in staging.
 require_approval() {
-  if [ -z "$APPROVER" ] && [[ " ${FX_UNATTENDED_ENVS:-} " == *" $ENVK "* ]]; then
+  if [ -z "$APPROVER" ] && unattended; then
     APPROVER="unattended (environment listed in FX_UNATTENDED_ENVS)"
     return
   fi
@@ -237,7 +250,7 @@ cmd_check() {
     if [ "$(jq -r --arg e "$event" 'index($e) != null' <<<"$metrics")" != true ]; then
       bad "no metric for event '$event' in this environment. Run: fx setup"
     elif grep -qxF "$event" <<<"$seen"; then
-      ok "event '$event' has been received here"
+      ok "event '$event' has been received here before"
     else
       bad "event '$event' has never been received here: check the name in your code (case-sensitive) and send a test conversion"
     fi
@@ -255,7 +268,13 @@ cmd_check() {
   fi
 
   [ $failed -eq 0 ] || die "pre-launch checks failed; fix them before starting"
-  [ -n "$XID" ] || echo "ready. Starting changes what users are served: show the user $SPEC and this output, ask, then: fx start --approved-by NAME"
+  if [ -n "$XID" ]; then
+    :
+  elif unattended; then
+    echo "ready. This environment is listed in FX_UNATTENDED_ENVS, so no approval is needed: fx start"
+  else
+    echo "ready. Starting changes what users are served: show the user $SPEC and this output, ask, then: fx start --approved-by NAME"
+  fi
 }
 
 # ---- start / stop ------------------------------------------------------------
@@ -301,14 +320,16 @@ cmd_stop() {
 # ---- status ------------------------------------------------------------------
 
 cmd_status() {
-  require_experiment
-  api "experiments/$XID/exposures/refresh/" -X POST >/dev/null 2>&1 || true
-  sleep 2
-  local exposures
+  find_latest_experiment
+  # Exposure counts are recomputed at most once every 5 minutes, so they can lag.
+  [ "$XSTATUS" = completed ] || api "experiments/$XID/exposures/refresh/" -X POST >/dev/null 2>&1 || true
+  [ "$XSTATUS" = completed ] || sleep 2
+  local exposures decision=""
   exposures=$(api "experiments/$XID/exposures/" --jq '
     [.exposures.payload.timeseries.points[]?.new_identities | to_entries[]] | group_by(.key)
     | map("\(.[0].key)=\(map(.value) | add)") | join(" ")')
-  echo "experiment id=$XID status=$XSTATUS exposures: ${exposures:-none yet}"
+  [ "$XSTATUS" != completed ] || decision=" decision=$(api "experiments/$XID/" --jq .rollout_decision)"
+  echo "experiment id=$XID status=$XSTATUS$decision exposures: ${exposures:-none yet}"
 }
 
 # ---- results -----------------------------------------------------------------
@@ -332,43 +353,53 @@ def signed: if . >= 0 then "+" + pct else pct end;
 def p3: (. * 1000 | round) / 1000;
 def arm($agg): if $agg == "occurrence" then "\(.sum | round)/\(.n) \(.sum / .n | pct)" else "n=\(.n) mean \((.sum / .n * 100 | round) / 100)" end;
 def sample_ratio($x; $p):
-  ($x.experiment_rollout.multivariate_feature_state_values[0].percentage_allocation / 100) as $s
+  # A finished experiment no longer carries its split, so fall back to the spec file.
+  (($x.experiment_rollout.multivariate_feature_state_values[0].percentage_allocation // $split // 0) / 100) as $s
   | ($p.metrics[0].variants // {}) as $v
   | ($v.control.n // 0) as $c
   | ([$v | to_entries[] | select(.key != "control") | .value.n] | add // 0) as $t
   | ($c + $t) as $n
   | if $p.srm_p_value != null then
       "sample ratio: \(if $p.srm_p_value < 0.001 then "MISMATCH - do not trust these results" else "ok" end) (p=\($p.srm_p_value | p3))"
-    elif $n < 100 or $s <= 0 or $s >= 1 then "sample ratio: not checked yet (needs 100 identities)"
+    elif $s <= 0 or $s >= 1 then "sample ratio: not checked (the configured split is not available)"
+    elif $n < 100 then "sample ratio: not checked yet (needs 100 identities)"
     else (($c - $n * (1 - $s)) as $dc | ($t - $n * $s) as $dt
       | (($dc * $dc / ($n * (1 - $s)) + $dt * $dt / ($n * $s)) / 2 | sqrt | erfc) as $pv
       | "sample ratio: \(if $pv < 0.001 then "MISMATCH - do not trust these results" else "ok" end) (control \($c) / variation \($t), expected \((1 - $s) * 100 | round)/\($s * 100 | round), p=\($pv | p3))")
     end;
-($x.metrics | map({key: (.metric | tostring), value: .}) | from_entries) as $meta
-| .results.payload as $p
+.results.payload as $p
 | if $p == null then "no results yet" else
-  ($p.metrics[] |
-    ($meta[.metric_id | tostring]) as $m
+  ($p.metrics | map({key: (.metric_id | tostring), value: .}) | from_entries) as $byId
+  # In the order the experiment lists its metrics: the first one is the primary.
+  | ($x.metrics | to_entries[] | .key as $i | .value as $m
+    | ($byId[$m.metric | tostring] // {variants: {}, inference: {}})
     | (.variants | to_entries | map("\(.key) \(.value | arm($m.aggregation))") | join("  ")) as $arms
     | (.inference // {} | to_entries | map(select(.value != null)) | map(
-        .value as $i
-        | (if ($m.expected_direction | startswith("not_")) then (if $i.chance_to_win <= 0.05 then "GUARDRAIL BREACHED" else "guardrail ok" end)
-           elif $i.chance_to_win >= 0.95 then "WINNING" elif $i.chance_to_win <= 0.05 then "LOSING" else "inconclusive" end) as $v
-        | "lift \($i.lift | signed) [\($i.ci_low | signed), \($i.ci_high | signed)]  chance \($i.chance_to_win | pct)  \($v)"
+        .value as $r
+        | (if ($m.expected_direction | startswith("not_")) then (if $r.chance_to_win <= 0.05 then "GUARDRAIL BREACHED" else "guardrail ok" end)
+           elif $r.chance_to_win >= 0.95 then "WINNING" elif $r.chance_to_win <= 0.05 then "LOSING" else "inconclusive" end) as $v
+        | "lift \($r.lift | signed) [\($r.ci_low | signed), \($r.ci_high | signed)]  chance \($r.chance_to_win | pct)  \($v)"
       ) | join("  ")) as $inf
-    | "\($m.metric_name)  \($arms)  \(if $inf == "" then "collecting data (needs 50 identities and 5 conversions per variation)" else $inf end)"),
+    | "\($m.metric_name)\(if $i == 0 then " (primary)" else "" end)  \($arms)  \(if $inf == "" then "collecting data (needs 50 identities and 5 conversions per variation)" else $inf end)"),
   sample_ratio($x; $p),
   "as of \(.results.as_of)\(if .results.is_final then " (final)" else "" end)"
   end'
 
 fetch_results() {
-  local experiment
+  local experiment split=null
   experiment=$(api "experiments/$XID/")
-  api "experiments/$XID/results/" | jq -r --argjson x "$experiment" "$RESULTS_JQ"
+  [ ! -f "$SPEC" ] || split=$(jq '.split // null' "$SPEC")
+  api "experiments/$XID/results/" | jq -r --argjson x "$experiment" --argjson split "$split" "$RESULTS_JQ"
 }
 
 cmd_results() {
-  require_experiment
+  find_latest_experiment
+  if [ "$XSTATUS" = completed ]; then
+    # Results of a finished experiment are frozen; there is nothing to refresh.
+    echo "experiment id=$XID is completed, decision=$(api "experiments/$XID/" --jq .rollout_decision)"
+    fetch_results
+    return
+  fi
   local before after tries=0
   before=$(api "experiments/$XID/results/" --jq '.results.as_of // "none"')
   # Refreshes are limited to one every 5 minutes; a throttled call is not an error.
@@ -392,7 +423,7 @@ cmd_ship() {
   require_experiment
   local summary primary body vid served_value
   summary=$(fetch_results)
-  primary=$(head -n 1 <<<"$summary")
+  primary=$(grep -m 1 '(primary)' <<<"$summary" || true)
   if [ $FORCE -eq 0 ]; then
     ! grep -q 'MISMATCH' <<<"$summary" || die "sample ratio mismatch: the split is broken, so the results cannot be trusted"
     # A breached guardrail blocks the variation whichever metric it is on.

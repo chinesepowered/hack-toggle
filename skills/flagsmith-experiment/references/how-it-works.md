@@ -16,6 +16,10 @@ Read this when a step fails in a way the command's own output does not explain. 
 
 Paths are relative to `api/v1/environments/<environment key>/`.
 
+`status` and `results` act on the unfinished experiment on the flag, or on the latest finished one if there is none, so results stay readable after a ship or a stop. `stop` and `ship --winner control` send Flagsmith the same decision; the difference is that `ship` records who approved it.
+
+The CLI asks for confirmation before its own write commands and needs `--yes` when there is no terminal. `fx` writes through `flagsmith api`, which does not prompt, so the approval gate in `fx` is the only gate.
+
 ## Why the experiment is created at `start`, not at `setup`
 
 An experiment cannot be created without its rollout, and the rollout is a segment override that takes effect immediately. With the payload shown in Flagsmith's own agent guide (`"enabled": true`), fresh identities are split between control and variation as soon as the experiment exists, while its status is still `created` and before anyone has started it. Setting `"enabled": false` instead serves the flag as disabled to everyone enrolled, which can switch off a feature that was on.
@@ -38,6 +42,7 @@ Booking correct  control 34/61 55.7%  accessible 62/79 78.5%  lift +40.8% [+5.1%
 sample ratio: ok (control 61 / variation 79, expected 50/50, p=0.128)
 ```
 
+- Metrics are printed in the order the experiment lists them, which is the order of the spec. The first is the primary and is the one `ship` judges.
 - `lift` is the relative change against the control; the bracket is Flagsmith's 95% credible interval.
 - `chance` is Flagsmith's chance to beat the control, already oriented by the metric's direction (for a lower-is-better metric, a drop is a win).
 - Verdicts use Flagsmith's documented thresholds: 95% or more is `WINNING`, 5% or less is `LOSING`. A guardrail is `BREACHED` only at 5% or less.
