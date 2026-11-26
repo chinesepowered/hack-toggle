@@ -1,0 +1,123 @@
+- generic [ref=e140]:
+  - generic [ref=e141]:
+    - generic [ref=e142]:
+      - generic [ref=e143]: 1. Pick a day
+      - generic [ref=e144]:
+        - generic [ref=e145]:
+          - generic [ref=e146] [cursor=pointer]
+          - generic [ref=e150]: December 2026
+          - generic [ref=e151] [cursor=pointer]
+        - generic [ref=e155]:
+          - generic [ref=e156]: Mo
+          - generic [ref=e157]: Tu
+          - generic [ref=e158]: We
+          - generic [ref=e159]: Th
+          - generic [ref=e160]: Fr
+          - generic [ref=e161]: Sa
+          - generic [ref=e162]: Su
+        - generic [ref=e163]:
+          - generic [ref=e165] [cursor=pointer]: "1"
+          - generic [ref=e166] [cursor=pointer]: "2"
+          - generic [ref=e167] [cursor=pointer]: "3"
+          - generic [ref=e168] [cursor=pointer]: "4"
+          - generic [ref=e169] [cursor=pointer]: "5"
+          - generic [ref=e170] [cursor=pointer]: "6"
+          - generic [ref=e171] [cursor=pointer]: "7"
+          - generic [ref=e172] [cursor=pointer]: "8"
+          - generic [ref=e173] [cursor=pointer]: "9"
+          - generic [ref=e174] [cursor=pointer]: "10"
+          - generic [ref=e175] [cursor=pointer]: "11"
+          - generic [ref=e176] [cursor=pointer]: "12"
+          - generic [ref=e177] [cursor=pointer]: "13"
+          - generic [ref=e178] [cursor=pointer]: "14"
+          - generic [ref=e179] [cursor=pointer]: "15"
+          - generic [ref=e180] [cursor=pointer]: "16"
+          - generic [ref=e181] [cursor=pointer]: "17"
+          - generic [ref=e182] [cursor=pointer]: "18"
+          - generic [ref=e183] [cursor=pointer]: "19"
+          - generic [ref=e184] [cursor=pointer]: "20"
+          - generic [ref=e185] [cursor=pointer]: "21"
+          - generic [ref=e186] [cursor=pointer]: "22"
+          - generic [ref=e187] [cursor=pointer]: "23"
+          - generic [ref=e188] [cursor=pointer]: "24"
+          - generic [ref=e189] [cursor=pointer]: "25"
+          - generic [ref=e190] [cursor=pointer]: "26"
+          - generic [ref=e191] [cursor=pointer]: "27"
+          - generic [ref=e192] [cursor=pointer]: "28"
+          - generic [ref=e193] [cursor=pointer]: "29"
+          - generic [ref=e194] [cursor=pointer]: "30"
+          - generic [ref=e195] [cursor=pointer]: "31"
+    - generic [ref=e196]:
+      - generic [ref=e197]: 2. Pick a time
+      - generic [ref=e198]:
+        - generic [ref=e199] [cursor=pointer]: 10:00 AM
+        - generic [ref=e200]: 11:30 AM
+        - generic [ref=e201] [cursor=pointer]: 1:00 PM
+        - generic [ref=e202]: 2:30 PM
+        - generic [ref=e203] [cursor=pointer]: 4:00 PM
+        - generic [ref=e204] [cursor=pointer]: 5:30 PM
+        - generic [ref=e205] [cursor=pointer]: 7:00 PM
+    - generic [ref=e206]:
+      - generic [ref=e207]: 3. How many guests?
+      - generic [ref=e208]:
+        - generic [ref=e209] [cursor=pointer]
+        - generic [ref=e212]: "3"
+        - generic [ref=e213] [cursor=pointer]
+    - generic [ref=e217]:
+      - generic [ref=e218]: 4. Choose your bath
+      - generic [ref=e219]:
+        - generic [ref=e220] [cursor=pointer]:
+          - generic [ref=e221]: Yuzu Bath
+          - generic [ref=e222]: Open-air pool with floating yuzu
+          - generic [ref=e223]: $28 per guest
+        - generic [ref=e224] [cursor=pointer]:
+          - generic [ref=e225]: Cedar Tub
+          - generic [ref=e226]: Private soaking tub, cedar-scented
+          - generic [ref=e227]: $34 per guest
+        - generic [ref=e228] [cursor=pointer]:
+          - generic [ref=e229]: Moonlight Pool
+          - generic [ref=e230]: Rooftop pool under the stars
+          - generic [ref=e231]: $42 per guest
+    - generic [ref=e232]:
+      - generic [ref=e233]: 5. Extras
+      - generic [ref=e234]:
+        - generic [ref=e235] [cursor=pointer]:
+          - generic [ref=e237]: Towel set
+          - generic [ref=e238]: +$6
+        - generic [ref=e239] [cursor=pointer]:
+          - generic [ref=e244]: Yuzu tea service
+          - generic [ref=e245]: +$9
+        - generic [ref=e246] [cursor=pointer]:
+          - generic [ref=e248]: Capybara plushie
+          - generic [ref=e249]: +$18
+    - generic [ref=e250]:
+      - generic [ref=e251]: 6. Your details
+      - generic [ref=e252]:
+        - generic [ref=e109]: Full name
+        - textbox [ref=e110]: Mika Tanaka
+      - generic [ref=e253]:
+        - generic [ref=e112]: Email
+        - textbox [ref=e113]: mika@example.com
+    - generic [ref=e254]:
+      - generic [ref=e255] [cursor=pointer]: "I accept the house rules: shower first, no splashing, be kind to capybaras."
+      - generic [ref=e261] [cursor=pointer]: Confirm booking
+  - generic [ref=e263]:
+    - generic [ref=e264]: Your booking
+    - generic [ref=e265]:
+      - generic [ref=e266]: Day
+      - generic [ref=e267]: Saturday 12 December 2026
+    - generic [ref=e268]:
+      - generic [ref=e269]: Time
+      - generic [ref=e270]: 10:00 AM
+    - generic [ref=e271]:
+      - generic [ref=e272]: Guests
+      - generic [ref=e273]: "3"
+    - generic [ref=e274]:
+      - generic [ref=e275]: Bath
+      - generic [ref=e276]: Cedar Tub
+    - generic [ref=e277]:
+      - generic [ref=e278]: Extras
+      - generic [ref=e279]: Yuzu tea service
+    - generic [ref=e280]:
+      - generic [ref=e281]: Total
+      - generic [ref=e282]: $111

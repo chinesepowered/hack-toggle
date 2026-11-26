@@ -1,0 +1,67 @@
+# Self-hosted Flagsmith with Experimentation, for the Capybara Onsen experiment.
+#
+# Three containers: PostgreSQL, the Flagsmith API + dashboard, and the task
+# processor. Experiment events are stored in this same PostgreSQL (the
+# "Flagsmith database" warehouse), which Flagsmith documents as suitable for
+# trying experimentation out, not for production load.
+#
+# Local playground defaults only. Do not expose this to a network as-is.
+
+name: capy-onsen
+
+x-flagsmith-env: &flagsmith-env
+  DATABASE_URL: postgresql://postgres:password@postgres:5432/flagsmith
+  USE_POSTGRES_FOR_ANALYTICS: 'true'
+  # Required for the Warehouse tab and the experiments API on self-hosted.
+  EXPERIMENTATION_ENABLED: 'true'
+  DJANGO_SECRET_KEY: ${FLAGSMITH_SECRET_KEY:-local-playground-only}
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: flagsmith
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -d flagsmith -U postgres']
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
+  flagsmith:
+    image: flagsmith/flagsmith:2.295.2
+    environment:
+      <<: *flagsmith-env
+      ENVIRONMENT: production
+      DJANGO_ALLOWED_HOSTS: '*'
+      FLAGSMITH_DOMAIN: localhost:8000
+      TASK_RUN_METHOD: TASK_PROCESSOR
+    ports:
+      - '8000:8000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # First boot runs every database migration (about 30 s), so give the
+    # health check room before it counts failures.
+    healthcheck:
+      test: ['CMD-SHELL', 'flagsmith healthcheck tcp']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 120s
+
+  # Started only after the API is healthy, so that database migrations are run
+  # by exactly one container.
+  flagsmith_processor:
+    image: flagsmith/flagsmith:2.295.2
+    environment:
+      <<: *flagsmith-env
+    command: run-task-processor
+    depends_on:
+      flagsmith:
+        condition: service_healthy
+
+volumes:
+  pgdata:

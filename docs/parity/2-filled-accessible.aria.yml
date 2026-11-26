@@ -1,0 +1,123 @@
+- generic [ref=e140]:
+  - form "Book a soak" [ref=e141]:
+    - region [ref=e142]:
+      - heading "1. Pick a day" [level=2] [ref=e143]
+      - generic [ref=e144]:
+        - generic [ref=e145]:
+          - button "Previous month" [ref=e146] [cursor=pointer]
+          - heading "December 2026" [level=3] [ref=e150]
+          - button "Next month" [ref=e151] [cursor=pointer]
+        - generic [aria-hidden] [ref=e155]:
+          - generic [ref=e156]: Mo
+          - generic [ref=e157]: Tu
+          - generic [ref=e158]: We
+          - generic [ref=e159]: Th
+          - generic [ref=e160]: Fr
+          - generic [ref=e161]: Sa
+          - generic [ref=e162]: Su
+        - group "Days in December 2026" [ref=e163]:
+          - button "Tuesday 1 December 2026" [ref=e165] [cursor=pointer]: "1"
+          - button "Wednesday 2 December 2026" [ref=e166] [cursor=pointer]: "2"
+          - button "Thursday 3 December 2026" [ref=e167] [cursor=pointer]: "3"
+          - button "Friday 4 December 2026" [ref=e168] [cursor=pointer]: "4"
+          - button "Saturday 5 December 2026" [ref=e169] [cursor=pointer]: "5"
+          - button "Sunday 6 December 2026" [ref=e170] [cursor=pointer]: "6"
+          - button "Monday 7 December 2026" [ref=e171] [cursor=pointer]: "7"
+          - button "Tuesday 8 December 2026" [ref=e172] [cursor=pointer]: "8"
+          - button "Wednesday 9 December 2026" [ref=e173] [cursor=pointer]: "9"
+          - button "Thursday 10 December 2026" [ref=e174] [cursor=pointer]: "10"
+          - button "Friday 11 December 2026" [ref=e175] [cursor=pointer]: "11"
+          - button "Saturday 12 December 2026" [pressed] [ref=e176] [cursor=pointer]: "12"
+          - button "Sunday 13 December 2026" [ref=e177] [cursor=pointer]: "13"
+          - button "Monday 14 December 2026" [ref=e178] [cursor=pointer]: "14"
+          - button "Tuesday 15 December 2026" [ref=e179] [cursor=pointer]: "15"
+          - button "Wednesday 16 December 2026" [ref=e180] [cursor=pointer]: "16"
+          - button "Thursday 17 December 2026" [ref=e181] [cursor=pointer]: "17"
+          - button "Friday 18 December 2026" [ref=e182] [cursor=pointer]: "18"
+          - button "Saturday 19 December 2026" [ref=e183] [cursor=pointer]: "19"
+          - button "Sunday 20 December 2026" [ref=e184] [cursor=pointer]: "20"
+          - button "Monday 21 December 2026" [ref=e185] [cursor=pointer]: "21"
+          - button "Tuesday 22 December 2026" [ref=e186] [cursor=pointer]: "22"
+          - button "Wednesday 23 December 2026" [ref=e187] [cursor=pointer]: "23"
+          - button "Thursday 24 December 2026" [ref=e188] [cursor=pointer]: "24"
+          - button "Friday 25 December 2026" [ref=e189] [cursor=pointer]: "25"
+          - button "Saturday 26 December 2026" [ref=e190] [cursor=pointer]: "26"
+          - button "Sunday 27 December 2026" [ref=e191] [cursor=pointer]: "27"
+          - button "Monday 28 December 2026" [ref=e192] [cursor=pointer]: "28"
+          - button "Tuesday 29 December 2026" [ref=e193] [cursor=pointer]: "29"
+          - button "Wednesday 30 December 2026" [ref=e194] [cursor=pointer]: "30"
+          - button "Thursday 31 December 2026" [ref=e195] [cursor=pointer]: "31"
+    - region [ref=e196]:
+      - heading "2. Pick a time" [level=2] [ref=e197]
+      - radiogroup "Time on Saturday 12 December 2026" [ref=e198]:
+        - radio "10:00 AM" [checked] [ref=e199] [cursor=pointer]
+        - radio "11:30 AM, sold out" [disabled] [ref=e200]: 11:30 AM
+        - radio "1:00 PM" [ref=e201] [cursor=pointer]
+        - radio "2:30 PM, sold out" [disabled] [ref=e202]: 2:30 PM
+        - radio "4:00 PM" [ref=e203] [cursor=pointer]
+        - radio "5:30 PM" [ref=e204] [cursor=pointer]
+        - radio "7:00 PM" [ref=e205] [cursor=pointer]
+    - region [ref=e206]:
+      - heading "3. How many guests?" [level=2] [ref=e207]
+      - group "Number of guests" [ref=e208]:
+        - button "Remove one guest" [ref=e209] [cursor=pointer]
+        - status "3 guests" [ref=e212]: "3"
+        - button "Add one guest" [ref=e213] [cursor=pointer]
+    - region [ref=e217]:
+      - heading "4. Choose your bath" [level=2] [ref=e218]
+      - radiogroup "Bath" [ref=e219]:
+        - radio "Yuzu Bath, $28 per guest. Open-air pool with floating yuzu" [ref=e220] [cursor=pointer]:
+          - generic [ref=e221]: Yuzu Bath
+          - generic [ref=e222]: Open-air pool with floating yuzu
+          - generic [ref=e223]: $28 per guest
+        - radio "Cedar Tub, $34 per guest. Private soaking tub, cedar-scented" [checked] [ref=e224] [cursor=pointer]:
+          - generic [ref=e225]: Cedar Tub
+          - generic [ref=e226]: Private soaking tub, cedar-scented
+          - generic [ref=e227]: $34 per guest
+        - radio "Moonlight Pool, $42 per guest. Rooftop pool under the stars" [ref=e228] [cursor=pointer]:
+          - generic [ref=e229]: Moonlight Pool
+          - generic [ref=e230]: Rooftop pool under the stars
+          - generic [ref=e231]: $42 per guest
+    - region [ref=e232]:
+      - heading "5. Extras" [level=2] [ref=e233]
+      - group "Extras" [ref=e234]:
+        - checkbox "Towel set, $6" [ref=e235] [cursor=pointer]:
+          - generic [ref=e237]: Towel set
+          - generic [ref=e238]: +$6
+        - checkbox "Yuzu tea service, $9" [checked] [ref=e239] [cursor=pointer]:
+          - generic [ref=e244]: Yuzu tea service
+          - generic [ref=e245]: +$9
+        - checkbox "Capybara plushie, $18" [ref=e246] [cursor=pointer]:
+          - generic [ref=e248]: Capybara plushie
+          - generic [ref=e249]: +$18
+    - region [ref=e250]:
+      - heading "6. Your details" [level=2] [ref=e251]
+      - generic [ref=e252]:
+        - generic [ref=e109]: Full name
+        - textbox "Full name" [ref=e110]: Mika Tanaka
+      - generic [ref=e253]:
+        - generic [ref=e112]: Email
+        - textbox "Email" [ref=e113]: mika@example.com
+    - generic [ref=e254]:
+      - 'checkbox "I accept the house rules: shower first, no splashing, be kind to capybaras." [checked] [ref=e255] [cursor=pointer]'
+      - button "Confirm booking" [ref=e261] [cursor=pointer]
+  - complementary [ref=e263]:
+    - heading "Your booking" [level=2] [ref=e264]
+    - generic [ref=e265]:
+      - generic [ref=e266]: Day
+      - generic [ref=e267]: Saturday 12 December 2026
+    - generic [ref=e268]:
+      - generic [ref=e269]: Time
+      - generic [ref=e270]: 10:00 AM
+    - generic [ref=e271]:
+      - generic [ref=e272]: Guests
+      - generic [ref=e273]: "3"
+    - generic [ref=e274]:
+      - generic [ref=e275]: Bath
+      - generic [ref=e276]: Cedar Tub
+    - generic [ref=e277]:
+      - generic [ref=e278]: Extras
+      - generic [ref=e279]: Yuzu tea service
+    - generic [ref=e280]:
+      - generic [ref=e281]: Total
+      - generic [ref=e282]: $111

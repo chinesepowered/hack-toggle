@@ -1,0 +1,115 @@
+- generic [ref=e2]:
+  - form "Book a soak" [ref=e3]:
+    - region [ref=e4]:
+      - heading "1. Pick a day" [level=2] [ref=e5]
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - button "Previous month" [disabled] [ref=e8]
+          - heading "November 2026" [level=3] [ref=e12]
+          - button "Next month" [ref=e13] [cursor=pointer]
+        - generic [aria-hidden] [ref=e17]:
+          - generic [ref=e18]: Mo
+          - generic [ref=e19]: Tu
+          - generic [ref=e20]: We
+          - generic [ref=e21]: Th
+          - generic [ref=e22]: Fr
+          - generic [ref=e23]: Sa
+          - generic [ref=e24]: Su
+        - group "Days in November 2026" [ref=e25]:
+          - button "Sunday 1 November 2026, not available" [disabled] [ref=e32]: "1"
+          - button "Monday 2 November 2026, not available" [disabled] [ref=e33]: "2"
+          - button "Tuesday 3 November 2026, not available" [disabled] [ref=e34]: "3"
+          - button "Wednesday 4 November 2026, not available" [disabled] [ref=e35]: "4"
+          - button "Thursday 5 November 2026, not available" [disabled] [ref=e36]: "5"
+          - button "Friday 6 November 2026, not available" [disabled] [ref=e37]: "6"
+          - button "Saturday 7 November 2026, not available" [disabled] [ref=e38]: "7"
+          - button "Sunday 8 November 2026, not available" [disabled] [ref=e39]: "8"
+          - button "Monday 9 November 2026, not available" [disabled] [ref=e40]: "9"
+          - button "Tuesday 10 November 2026, not available" [disabled] [ref=e41]: "10"
+          - button "Wednesday 11 November 2026, not available" [disabled] [ref=e42]: "11"
+          - button "Thursday 12 November 2026, not available" [disabled] [ref=e43]: "12"
+          - button "Friday 13 November 2026, not available" [disabled] [ref=e44]: "13"
+          - button "Saturday 14 November 2026, not available" [disabled] [ref=e45]: "14"
+          - button "Sunday 15 November 2026, not available" [disabled] [ref=e46]: "15"
+          - button "Monday 16 November 2026, not available" [disabled] [ref=e47]: "16"
+          - button "Tuesday 17 November 2026, not available" [disabled] [ref=e48]: "17"
+          - button "Wednesday 18 November 2026, not available" [disabled] [ref=e49]: "18"
+          - button "Thursday 19 November 2026, not available" [disabled] [ref=e50]: "19"
+          - button "Friday 20 November 2026, not available" [disabled] [ref=e51]: "20"
+          - button "Saturday 21 November 2026, not available" [disabled] [ref=e52]: "21"
+          - button "Sunday 22 November 2026, not available" [disabled] [ref=e53]: "22"
+          - button "Monday 23 November 2026, not available" [disabled] [ref=e54]: "23"
+          - button "Tuesday 24 November 2026, not available" [disabled] [ref=e55]: "24"
+          - button "Wednesday 25 November 2026, not available" [disabled] [ref=e56]: "25"
+          - button "Thursday 26 November 2026, not available" [disabled] [ref=e57]: "26"
+          - button "Friday 27 November 2026, not available" [disabled] [ref=e58]: "27"
+          - button "Saturday 28 November 2026" [ref=e59] [cursor=pointer]: "28"
+          - button "Sunday 29 November 2026" [ref=e60] [cursor=pointer]: "29"
+          - button "Monday 30 November 2026" [ref=e61] [cursor=pointer]: "30"
+    - region [ref=e62]:
+      - heading "2. Pick a time" [level=2] [ref=e63]
+      - generic [ref=e64]: Pick a day first to see the times.
+    - region [ref=e65]:
+      - heading "3. How many guests?" [level=2] [ref=e66]
+      - group "Number of guests" [ref=e67]:
+        - button "Remove one guest" [ref=e68] [cursor=pointer]
+        - status "2 guests" [ref=e71]: "2"
+        - button "Add one guest" [ref=e72] [cursor=pointer]
+    - region [ref=e76]:
+      - heading "4. Choose your bath" [level=2] [ref=e77]
+      - radiogroup "Bath" [ref=e78]:
+        - radio "Yuzu Bath, $28 per guest. Open-air pool with floating yuzu" [ref=e79] [cursor=pointer]:
+          - generic [ref=e80]: Yuzu Bath
+          - generic [ref=e81]: Open-air pool with floating yuzu
+          - generic [ref=e82]: $28 per guest
+        - radio "Cedar Tub, $34 per guest. Private soaking tub, cedar-scented" [ref=e83] [cursor=pointer]:
+          - generic [ref=e84]: Cedar Tub
+          - generic [ref=e85]: Private soaking tub, cedar-scented
+          - generic [ref=e86]: $34 per guest
+        - radio "Moonlight Pool, $42 per guest. Rooftop pool under the stars" [ref=e87] [cursor=pointer]:
+          - generic [ref=e88]: Moonlight Pool
+          - generic [ref=e89]: Rooftop pool under the stars
+          - generic [ref=e90]: $42 per guest
+    - region [ref=e91]:
+      - heading "5. Extras" [level=2] [ref=e92]
+      - group "Extras" [ref=e93]:
+        - checkbox "Towel set, $6" [ref=e94] [cursor=pointer]:
+          - generic [ref=e96]: Towel set
+          - generic [ref=e97]: +$6
+        - checkbox "Yuzu tea service, $9" [ref=e98] [cursor=pointer]:
+          - generic [ref=e100]: Yuzu tea service
+          - generic [ref=e101]: +$9
+        - checkbox "Capybara plushie, $18" [ref=e102] [cursor=pointer]:
+          - generic [ref=e104]: Capybara plushie
+          - generic [ref=e105]: +$18
+    - region [ref=e106]:
+      - heading "6. Your details" [level=2] [ref=e107]
+      - generic [ref=e108]:
+        - generic [ref=e109]: Full name
+        - textbox "Full name" [ref=e110]
+      - generic [ref=e111]:
+        - generic [ref=e112]: Email
+        - textbox "Email" [ref=e113]
+    - generic [ref=e114]:
+      - 'checkbox "I accept the house rules: shower first, no splashing, be kind to capybaras." [ref=e115] [cursor=pointer]'
+      - button "Confirm booking" [ref=e118] [cursor=pointer]
+  - complementary [ref=e120]:
+    - heading "Your booking" [level=2] [ref=e121]
+    - generic [ref=e122]:
+      - generic [ref=e123]: Day
+      - generic [ref=e124]: Not chosen yet
+    - generic [ref=e125]:
+      - generic [ref=e126]: Time
+      - generic [ref=e127]: Not chosen yet
+    - generic [ref=e128]:
+      - generic [ref=e129]: Guests
+      - generic [ref=e130]: "2"
+    - generic [ref=e131]:
+      - generic [ref=e132]: Bath
+      - generic [ref=e133]: Not chosen yet
+    - generic [ref=e134]:
+      - generic [ref=e135]: Extras
+      - generic [ref=e136]: None
+    - generic [ref=e137]:
+      - generic [ref=e138]: Total
+      - generic [ref=e139]: $0

@@ -1,0 +1,23 @@
+# Secrets: never commit
+.env
+.env.*
+!.env.example
+
+# Dependencies and build output
+node_modules/
+dist/
+.cache/
+
+# Local runtime data (bookings, guest runs, Flagsmith bootstrap state)
+data/
+.flagsmith/
+*.log
+
+# Video build intermediates (the final cut is delivered separately)
+video/build/
+video/out/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

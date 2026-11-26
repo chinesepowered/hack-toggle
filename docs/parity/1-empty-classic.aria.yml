@@ -1,0 +1,114 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]: 1. Pick a day
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - generic [ref=e12]: November 2026
+          - generic [ref=e13] [cursor=pointer]
+        - generic [ref=e17]:
+          - generic [ref=e18]: Mo
+          - generic [ref=e19]: Tu
+          - generic [ref=e20]: We
+          - generic [ref=e21]: Th
+          - generic [ref=e22]: Fr
+          - generic [ref=e23]: Sa
+          - generic [ref=e24]: Su
+        - generic [ref=e25]:
+          - generic [ref=e32]: "1"
+          - generic [ref=e33]: "2"
+          - generic [ref=e34]: "3"
+          - generic [ref=e35]: "4"
+          - generic [ref=e36]: "5"
+          - generic [ref=e37]: "6"
+          - generic [ref=e38]: "7"
+          - generic [ref=e39]: "8"
+          - generic [ref=e40]: "9"
+          - generic [ref=e41]: "10"
+          - generic [ref=e42]: "11"
+          - generic [ref=e43]: "12"
+          - generic [ref=e44]: "13"
+          - generic [ref=e45]: "14"
+          - generic [ref=e46]: "15"
+          - generic [ref=e47]: "16"
+          - generic [ref=e48]: "17"
+          - generic [ref=e49]: "18"
+          - generic [ref=e50]: "19"
+          - generic [ref=e51]: "20"
+          - generic [ref=e52]: "21"
+          - generic [ref=e53]: "22"
+          - generic [ref=e54]: "23"
+          - generic [ref=e55]: "24"
+          - generic [ref=e56]: "25"
+          - generic [ref=e57]: "26"
+          - generic [ref=e58]: "27"
+          - generic [ref=e59] [cursor=pointer]: "28"
+          - generic [ref=e60] [cursor=pointer]: "29"
+          - generic [ref=e61] [cursor=pointer]: "30"
+    - generic [ref=e62]:
+      - generic [ref=e63]: 2. Pick a time
+      - generic [ref=e64]: Pick a day first to see the times.
+    - generic [ref=e65]:
+      - generic [ref=e66]: 3. How many guests?
+      - generic [ref=e67]:
+        - generic [ref=e68] [cursor=pointer]
+        - generic [ref=e71]: "2"
+        - generic [ref=e72] [cursor=pointer]
+    - generic [ref=e76]:
+      - generic [ref=e77]: 4. Choose your bath
+      - generic [ref=e78]:
+        - generic [ref=e79] [cursor=pointer]:
+          - generic [ref=e80]: Yuzu Bath
+          - generic [ref=e81]: Open-air pool with floating yuzu
+          - generic [ref=e82]: $28 per guest
+        - generic [ref=e83] [cursor=pointer]:
+          - generic [ref=e84]: Cedar Tub
+          - generic [ref=e85]: Private soaking tub, cedar-scented
+          - generic [ref=e86]: $34 per guest
+        - generic [ref=e87] [cursor=pointer]:
+          - generic [ref=e88]: Moonlight Pool
+          - generic [ref=e89]: Rooftop pool under the stars
+          - generic [ref=e90]: $42 per guest
+    - generic [ref=e91]:
+      - generic [ref=e92]: 5. Extras
+      - generic [ref=e93]:
+        - generic [ref=e94] [cursor=pointer]:
+          - generic [ref=e96]: Towel set
+          - generic [ref=e97]: +$6
+        - generic [ref=e98] [cursor=pointer]:
+          - generic [ref=e100]: Yuzu tea service
+          - generic [ref=e101]: +$9
+        - generic [ref=e102] [cursor=pointer]:
+          - generic [ref=e104]: Capybara plushie
+          - generic [ref=e105]: +$18
+    - generic [ref=e106]:
+      - generic [ref=e107]: 6. Your details
+      - generic [ref=e108]:
+        - generic [ref=e109]: Full name
+        - textbox [ref=e110]
+      - generic [ref=e111]:
+        - generic [ref=e112]: Email
+        - textbox [ref=e113]
+    - generic [ref=e114]:
+      - generic [ref=e115] [cursor=pointer]: "I accept the house rules: shower first, no splashing, be kind to capybaras."
+      - generic [ref=e118] [cursor=pointer]: Confirm booking
+  - generic [ref=e120]:
+    - generic [ref=e121]: Your booking
+    - generic [ref=e122]:
+      - generic [ref=e123]: Day
+      - generic [ref=e124]: Not chosen yet
+    - generic [ref=e125]:
+      - generic [ref=e126]: Time
+      - generic [ref=e127]: Not chosen yet
+    - generic [ref=e128]:
+      - generic [ref=e129]: Guests
+      - generic [ref=e130]: "2"
+    - generic [ref=e131]:
+      - generic [ref=e132]: Bath
+      - generic [ref=e133]: Not chosen yet
+    - generic [ref=e134]:
+      - generic [ref=e135]: Extras
+      - generic [ref=e136]: None
+    - generic [ref=e137]:
+      - generic [ref=e138]: Total
+      - generic [ref=e139]: $0

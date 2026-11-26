@@ -1,0 +1,26 @@
+{
+  "name": "capy-onsen",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Capybara Onsen: a Flagsmith experiment that measures whether accessible markup helps AI agents complete a booking.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "flagsmith:up": "docker compose up -d --wait",
+    "flagsmith:down": "docker compose down",
+    "flagsmith:reset": "docker compose down -v && rm -rf .flagsmith",
+    "bootstrap": "node scripts/bootstrap.mjs",
+    "app": "node app/server.mjs",
+    "guests": "node guests/run.mjs",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@flagsmith/nodejs": "^9.1.0",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}
