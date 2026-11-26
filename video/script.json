@@ -133,6 +133,45 @@
           12
         ]
       }
+    },
+    {
+      "id": "flagdash",
+      "say": "Both versions sit behind a single Flagsmith feature flag.",
+      "visual": {
+        "type": "live",
+        "login": true,
+        "shots": [
+          {
+            "url": "{flagsmith}/project/{project}/environment/{staging}/features",
+            "settle": 5000
+          },
+          {
+            "url": "{flagsmith}/project/{project}/environment/{staging}/experiments/5",
+            "settle": 6000
+          },
+          {
+            "do": [
+              [
+                "scroll",
+                560
+              ]
+            ],
+            "settle": 1200
+          }
+        ]
+      }
+    },
+    {
+      "id": "termtest",
+      "say": "The verdict.",
+      "visual": {
+        "type": "card",
+        "template": "verdict",
+        "data": {
+          "heading": "Flagsmith's verdict",
+          "file": "data/logs/rehearsal-results.txt"
+        }
+      }
     }
   ]
 }

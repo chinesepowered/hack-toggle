@@ -68,6 +68,15 @@ pre{margin:0;font-family:'DejaVu Sans Mono',ui-monospace,Menlo,monospace}
   box-shadow:0 10px 40px rgba(58,42,31,.25);overflow:hidden}
 .term .cmd{color:#f6b93b;font-weight:700}.term .ok{color:#8ad6a4}.term .fail{color:#ff8f80;font-weight:700}
 .term .win{color:#8ad6a4;font-weight:700}.term .warn{color:#f6b93b;font-weight:700}.term .dim{color:#a8998a}
+.term{white-space:pre-wrap;overflow-wrap:anywhere}
+table.verdict{width:100%;border-collapse:separate;border-spacing:0 14px;font-size:30px;white-space:nowrap}
+table.verdict thead th{font-size:23px;font-weight:600;color:#7a6555;text-align:left;padding:0 22px}
+table.verdict tbody tr{background:#fffdf8}
+table.verdict tbody th,table.verdict tbody td{padding:22px 22px;text-align:left;border-top:2px solid #e7d9c4;border-bottom:2px solid #e7d9c4;font-weight:700}
+table.verdict tbody th{border-left:2px solid #e7d9c4;border-radius:22px 0 0 22px;font-weight:800}
+table.verdict tbody td:last-child{border-right:2px solid #e7d9c4;border-radius:0 22px 22px 0}
+table.verdict small{display:block;font-size:21px;font-weight:600;color:#7a6555}
+.ratio{margin-top:10px;font-size:25px;color:#7a6555;font-family:'DejaVu Sans Mono',monospace}
 .center{align-items:center;justify-content:center;text-align:center}
 .shot{position:absolute;inset:0}.shot img{width:${W}px;height:${H}px;display:block}
 .ring{position:absolute;border:6px solid #f6b93b;border-radius:16px;box-shadow:0 0 0 9999px rgba(36,26,20,.28)}
@@ -125,6 +134,34 @@ const TEMPLATES = {
     return page(`<div class="pad"><h2>${esc(heading)}</h2><pre class="term">${all.map(colourTerminal).join('\n')}</pre></div>`);
   },
 
+  // The output of `fx results`, laid out as a table so it can be read at video size.
+  // Every cell is taken from the real output file; nothing is recomputed here.
+  verdict: ({ heading, file, banner }) => {
+    const lines = text(file).split('\n').filter(Boolean);
+    const tidy = (arm) => {
+      const mean = arm.match(/n=(\d+) mean ([\d.]+)/);
+      if (mean) return `${Number(mean[2]).toLocaleString('en-US', { maximumFractionDigits: Number(mean[2]) < 100 ? 1 : 0 })}<small>mean of ${mean[1]}</small>`;
+      const rate = arm.match(/(\d+\/\d+) ([\d.]+%)/);
+      return rate ? `${rate[1]}<small>${rate[2]}</small>` : esc(arm);
+    };
+    const rows = lines
+      .filter((l) => /  control /.test(l))
+      .map((l) => {
+        const [name, control, variation, lift = '', chance = '', verdict = ''] = l.split(/\s{2,}/);
+        const tone = /BREACHED|LOSING/.test(verdict) ? 'red' : /ok|WINNING/.test(verdict) ? 'teal' : 'orange';
+        return `<tr><th>${esc(name.replace(' (primary)', ''))}${/\(primary\)/.test(name) ? '<small>primary</small>' : ''}</th>
+          <td>${tidy(control.replace(/^control /, ''))}</td><td>${tidy(variation.replace(/^\S+ /, ''))}</td>
+          <td>${esc(lift.replace(/^lift /, ''))}</td><td>${esc(chance.replace(/^chance /, ''))}</td>
+          <td><span class="chip ${tone}">${esc(verdict.toLowerCase())}</span></td></tr>`;
+      })
+      .join('');
+    const ratio = lines.find((l) => l.startsWith('sample ratio:')) ?? '';
+    return page(`<div class="pad"><h2>${esc(heading)}</h2><table class="verdict">
+      <thead><tr><th></th><th>classic</th><th>accessible</th><th>lift, 95% interval</th><th>chance to beat control</th><th>verdict</th></tr></thead>
+      <tbody>${rows}</tbody></table>
+      <div class="ratio">${esc(ratio)}</div>${banner ? `<div class="banner" style="margin-top:auto">${banner}</div>` : ''}</div>`);
+  },
+
   stats: ({ heading, items, banner }) =>
     page(`<div class="pad"><h2>${esc(heading)}</h2><div class="stat">${items
       .map((i) => `<div><div class="k">${esc(i.label)}</div><div class="v" style="color:${i.colour || '#3a2a1f'}">${esc(i.value)}</div><div class="n">${esc(i.note || '')}</div></div>`)
@@ -145,6 +182,31 @@ const stage = await (await browser.newContext({ viewport: { width: W, height: H 
 // Live pages are captured at 1280x720 CSS pixels scaled 1.5x, so their text is large enough to read.
 const liveContext = await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1.5, reducedMotion: 'reduce' });
 
+// Live scenes may point at the local Flagsmith dashboard. URLs can use
+// {flagsmith}, {project}, {staging} and {production}, filled in from the
+// state written by scripts/bootstrap.mjs.
+const flagsmith = existsSync(join(ROOT, '.flagsmith', 'state.json')) ? JSON.parse(text('.flagsmith/state.json')) : null;
+const fillUrl = (url) =>
+  url
+    .replaceAll('{flagsmith}', flagsmith?.apiUrl ?? '')
+    .replaceAll('{project}', flagsmith?.project.id ?? '')
+    .replaceAll('{staging}', flagsmith?.environments.staging.clientKey ?? '')
+    .replaceAll('{production}', flagsmith?.environments.production.clientKey ?? '');
+let loggedIn = false;
+async function logInToFlagsmith() {
+  if (loggedIn) return;
+  const page = await liveContext.newPage();
+  // The dashboard keeps connections open, so "network idle" never comes; wait for the form instead.
+  await page.goto(`${flagsmith.apiUrl}/login`, { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('input[type=password]', { timeout: 30000 });
+  await page.locator('input[name=email]').fill(flagsmith.admin.email);
+  await page.locator('input[type=password]').fill(flagsmith.admin.password);
+  await page.keyboard.press('Enter');
+  await page.waitForURL(/\/organisation\//, { timeout: 30000 });
+  await page.close();
+  loggedIn = true;
+}
+
 async function renderCard(id, n, html) {
   const htmlFile = join(BUILD, 'html', `${id}-${n}.html`);
   writeFileSync(htmlFile, html);
@@ -161,10 +223,11 @@ async function renderScene(scene) {
   if (v.type === 'card') return [{ file: await renderCard(scene.id, 0, TEMPLATES[v.template](v.data)), weight: 1 }];
 
   if (v.type === 'live') {
+    if (v.login) await logInToFlagsmith();
     const live = await liveContext.newPage();
     const frames = [];
     for (const [i, shot] of v.shots.entries()) {
-      if (shot.url) await live.goto(shot.url, { waitUntil: 'networkidle' });
+      if (shot.url) await live.goto(fillUrl(shot.url), { waitUntil: v.login ? 'domcontentloaded' : 'load' });
       for (const [action, a, b] of shot.do ?? []) {
         if (action === 'click') await live.click(a);
         else if (action === 'fill') await live.fill(a, b);
