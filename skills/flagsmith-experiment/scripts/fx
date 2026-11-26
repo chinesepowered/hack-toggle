@@ -207,16 +207,18 @@ cmd_setup() {
   echo "flag $FLAG control=$(spec .control) variation=$vkey"
 
   # Metrics, matched by event name so that re-running never duplicates them.
-  local existing
+  local existing kind primary=", primary"
   existing=$(api experiment-metrics/ --jq "[$ROWS[] | .definition.event]")
-  while IFS=$'\t' read -r event agg dir name; do
+  while IFS=$'\t' read -r event agg dir name expected; do
     if [ "$(jq -r --arg e "$event" 'index($e) != null' <<<"$existing")" != true ]; then
       jq -n --arg n "$name" --arg a "$agg" --arg d "$dir" --arg e "$event" \
         '{name: $n, aggregation: $a, direction: $d, definition: {version: 1, event: $e}}' |
         api experiment-metrics/ --input - >/dev/null
     fi
-    echo "metric $event $agg"
-  done < <(spec '.metrics[] | [.event, .aggregation, .direction, .name] | @tsv')
+    case $expected in not_*) kind=guardrail ;; *) kind=goal ;; esac
+    echo "metric $event $agg expect=$expected ($kind$primary)"
+    primary=""
+  done < <(spec '.metrics[] | [.event, .aggregation, .direction, .name, .expected] | @tsv')
   echo "nothing users see has changed. next: send a test conversion through your app here, then: fx check"
 }
 
@@ -301,10 +303,17 @@ cmd_start() {
     api "experiments/$XID/" -X DELETE >/dev/null 2>&1 || true
     die "could not start the experiment; it was removed again and nothing has changed for users"
   fi
+  # Twenty probes only show whether the split is on. Whether it has the right
+  # size is the sample-ratio line in the results.
   local c v
   read -r c v < <(probe_split "$(spec .control)")
-  echo "live: of 20 probe identities $c get the control and $v the variation (configured $((100 - $(spec .split)))/$(spec .split))"
+  if [ "$c" -gt 0 ] && [ "$v" -gt 0 ]; then
+    echo "live: both versions are being served ($c control / $v variation of 20 probe identities)"
+  else
+    echo "WARNING: of 20 probe identities $c get the control and $v the variation, so only one version is being served. Look at the flag in the dashboard, or: fx stop"
+  fi
   record start "spec=$SPEC"
+  echo "next: when traffic flows, fx status should show exposures on both sides. When the planned traffic has finished: fx results"
 }
 
 cmd_stop() {
@@ -413,7 +422,25 @@ cmd_results() {
   else
     echo "note: refresh throttled (once per 5 minutes); showing the last computed results"
   fi
-  fetch_results
+  local summary
+  summary=$(fetch_results)
+  echo "$summary"
+  if grep -q 'collecting data\|no results yet' <<<"$summary"; then
+    echo "next: wait for more traffic, then fx results again"
+  elif unattended; then
+    echo "next: check the counts add up to the traffic you sent, save these lines, then fx ship --winner KEY|control. If it refuses: fx stop"
+  else
+    echo "next: check the counts add up to the traffic you sent, save these lines, show them to the user, and ask before: fx ship --winner KEY|control --approved-by NAME"
+  fi
+}
+
+# Refuse to ship, leave a trace of the attempt, and say what to do instead.
+refuse() {
+  record ship-refused "winner=$WINNER reason=$1" >/dev/null
+  if unattended; then
+    die "$1. This is an unattended sandbox, so do not force it: run fx stop and report."
+  fi
+  die "$1. Ship control or keep collecting. Use --force only once the user has seen this and accepted it."
 }
 
 # ---- ship --------------------------------------------------------------------
@@ -425,15 +452,16 @@ cmd_ship() {
   summary=$(fetch_results)
   primary=$(grep -m 1 '(primary)' <<<"$summary" || true)
   if [ $FORCE -eq 0 ]; then
-    ! grep -q 'MISMATCH' <<<"$summary" || die "sample ratio mismatch: the split is broken, so the results cannot be trusted"
+    ! grep -q 'MISMATCH' <<<"$summary" || refuse "sample ratio mismatch: the split is broken, so the results cannot be trusted"
     # A breached guardrail blocks the variation whichever metric it is on.
     ! grep -q 'GUARDRAIL BREACHED' <<<"$summary" || [ "$WINNER" = control ] ||
-      die "a guardrail is breached: $(grep 'GUARDRAIL BREACHED' <<<"$summary" | sed 's/  .*//' | paste -sd, -). Ship control, or use --force once the user has accepted the trade-off."
+      refuse "a guardrail is breached: $(grep 'GUARDRAIL BREACHED' <<<"$summary" | sed 's/  .*//' | paste -sd, -)"
     case $primary in
       *"guardrail ok"*) ;; # a do-no-harm experiment: the primary only has to hold
       *WINNING*) [ "$WINNER" != control ] || die "the primary metric favours the variation, but --winner is control. Use --force if that is intended." ;;
-      *LOSING*) [ "$WINNER" = control ] || die "the primary metric says the variation is losing. Ship control, or use --force." ;;
-      *) die "the primary metric is not conclusive: $primary. Keep collecting, or use --force." ;;
+      *LOSING*) [ "$WINNER" = control ] || refuse "the primary metric says the variation is losing" ;;
+      "") [ "$WINNER" = control ] || refuse "there are no results for the primary metric yet" ;;
+      *) [ "$WINNER" = control ] || refuse "the primary metric is not conclusive (${primary%%  *})" ;;
     esac
   fi
   require_approval results

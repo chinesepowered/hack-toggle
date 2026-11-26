@@ -8,7 +8,7 @@ Capybara Onsen is a hot-spring booking site with two versions of its booking for
 
 A Flagsmith experiment splits AI guests between the two versions and counts correct bookings, completed bookings, steps and tokens. Each guest is a language model operating a real browser, so nobody types in a conversion rate. The result is whatever the agents do.
 
-> **Status.** The production experiment is pre-registered and passes its pre-launch check. It starts when a person approves it, and this section will then carry its result. Three Staging runs (about 260 guests) are summarised under [Results so far](#results-so-far).
+> **Status.** The production experiment is pre-registered and passes its pre-launch check. It starts when a person approves it, and this section will then carry its result. Three Staging runs (300 guests) are summarised under [Results so far](#results-so-far).
 
 Built for [Toggle Wars: The Flagsmith Experimentation Hackathon](https://www.wemakedevs.org/hackathons/flagsmith). One project, entered in all four tracks; see [The four tracks](#the-four-tracks).
 
@@ -55,9 +55,10 @@ These are Staging runs, used to debug the harness and size the experiment. They 
 | Run | Guests | Correct, classic | Correct, accessible | Actions per guest | Tokens per guest |
 |---|---|---|---|---|---|
 | Pilot 2 | 60 | 25 of 25 | 35 of 35 | 11.7 and 11.5 | 31,630 and 37,414 (+18%) |
-| Skill rehearsal | 120 | 63 of 63 | 57 of 57 | 11.8 and 12.0 | 31,902 and 38,954 (+22%) |
+| Skill test 1 | 120 | 63 of 63 | 57 of 57 | 11.8 and 12.0 | 31,902 and 38,954 (+22%) |
+| Skill test 2 | 120 | 55 of 55 | 65 of 65 | 12.2 and 11.8 | 32,915 and 38,215 (+16%) |
 
-Flagsmith's verdict on the rehearsal, as `fx results` printed it:
+The two skill tests were run end to end by a fresh agent using only the skill (see [The four tracks](#the-four-tracks)). Flagsmith's verdict on the first, as `fx results` printed it:
 
 ```
 Booking correct (primary)  control 63/63 100%  accessible 57/57 100%  lift +0% [+0%, +0%]  chance 50%  guardrail ok
@@ -126,8 +127,8 @@ The dashboard is at http://localhost:8000 (the login is in `.flagsmith/state.jso
 **Track 3, Build on Open Source Flagsmith.** Everything runs on self-hosted Flagsmith from one command. Three pieces are meant to be reused: `scripts/bootstrap.mjs` sets up a fresh instance without touching the dashboard, `guests/guest.mjs` drives an AI guest through any site given a URL and a task in plain language (the briefs and the audit here are specific to the onsen), and `fx` runs any two-version experiment.
 
 **Track 4, Flagsmith Agent Skills.** [skills/flagsmith-experiment](skills/flagsmith-experiment/SKILL.md) takes an agent through the whole job on the Flagsmith CLI: plan, check, human-approved start, results with a verdict, rollout.
-- *Completes the whole job.* A fresh agent, given only the skill and where the app was, ran the experiment end to end in Staging and correctly declined to ship when a guardrail was breached.
-- *Token efficiency.* `SKILL.md` is about 1,500 tokens, and `fx` prints one fact per line. That first run took 26 tool calls and 117,084 tokens as counted by the agent harness, which includes the agent's own system prompt on every turn.
+- *Completes the whole job.* Twice, a fresh agent given only the skill and the location of the app ran the experiment end to end in Staging. Both times the token guardrail was breached. In the second test the agent tried to ship the variation, `fx` refused, and the agent stopped the experiment instead.
+- *Token efficiency.* `SKILL.md` is about 1,600 tokens and `fx` prints one fact per line. The first test took 26 tool calls and 117,084 tokens. After we rewrote the instructions from that agent's feedback, the second took 15 tool calls and 104,707 tokens, including the extra ship attempt. These are the agent harness's totals, which count the agent's own system prompt on every turn and its written report.
 - *Creative use of the CLI.* `flagsmith evaluate --identity` on throwaway identities proves that nothing is live before a start and that the rollout is live after it. The warehouse's list of received event names catches a misspelt event before it costs a day. `--jq` keeps every call to the few fields needed.
 - *Safety.* Experiments are created and started in one approved step, because a created experiment already serves its variation. Stop is always allowed. Ship refuses an inconclusive primary metric, a breached guardrail or a broken split.
 
