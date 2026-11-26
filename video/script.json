@@ -1,0 +1,138 @@
+{
+  "scenes": [
+    {
+      "id": "hook",
+      "say": "This is Capybara Onsen. More and more of its guests are not people. They are AI agents, booking a soak on someone else's behalf.",
+      "visual": {
+        "type": "live",
+        "shots": [
+          {
+            "url": "http://localhost:3000/",
+            "settle": 1200
+          }
+        ]
+      }
+    },
+    {
+      "id": "same",
+      "say": "The onsen is about to ship an accessibility upgrade to its booking form. To a person, the new version looks exactly the same. Not one pixel is different.",
+      "visual": {
+        "type": "card",
+        "template": "compare",
+        "data": {
+          "heading": "Two versions of the booking form",
+          "left": {
+            "label": "classic",
+            "tone": "orange",
+            "note": "built from <div>s",
+            "image": "docs/parity/2-filled-classic.png"
+          },
+          "right": {
+            "label": "accessible",
+            "tone": "teal",
+            "note": "buttons, labels, ARIA state",
+            "image": "docs/parity/2-filled-accessible.png"
+          },
+          "banner": "<b>0</b> of 2,531,840 pixels differ"
+        }
+      }
+    },
+    {
+      "id": "agentview",
+      "say": "But an AI agent does not look at pixels. It reads the accessibility tree. And there, the two versions could hardly be more different: unnamed controls on one side, buttons with names and state on the other.",
+      "visual": {
+        "type": "card",
+        "template": "snapshots",
+        "data": {
+          "heading": "What an AI agent reads",
+          "left": {
+            "label": "classic",
+            "tone": "orange",
+            "note": "abridged accessibility snapshot",
+            "lines": [
+              "- generic: 1. Pick a day",
+              "  - generic [cursor=pointer]",
+              "  - generic: December 2026",
+              "  - generic [cursor=pointer]",
+              "  - generic [cursor=pointer]: \"12\"",
+              "- generic: 2. Pick a time",
+              "  - generic [cursor=pointer]: 10:00 AM",
+              "  - generic: 11:30 AM",
+              "- generic: 3. How many guests?",
+              "  - generic [cursor=pointer]",
+              "  - generic: \"3\"",
+              "  - generic [cursor=pointer]",
+              "- generic: 5. Extras",
+              "  - generic [cursor=pointer]: Yuzu tea service +$9",
+              "- generic: 6. Your details",
+              "  - generic: Full name",
+              "  - textbox: Mika Tanaka",
+              "- generic [cursor=pointer]: Confirm booking"
+            ]
+          },
+          "right": {
+            "label": "accessible",
+            "tone": "teal",
+            "note": "abridged accessibility snapshot",
+            "lines": [
+              "- heading \"1. Pick a day\"",
+              "  - button \"Previous month\"",
+              "  - heading \"December 2026\"",
+              "  - button \"Next month\"",
+              "  - button \"Saturday 12 December 2026\" [pressed]",
+              "- heading \"2. Pick a time\"",
+              "  - radio \"10:00 AM\" [checked]",
+              "  - radio \"11:30 AM\" [disabled]",
+              "- heading \"3. How many guests?\"",
+              "  - button \"Remove one guest\"",
+              "  - status \"3 guests\"",
+              "  - button \"Add one guest\"",
+              "- heading \"5. Extras\"",
+              "  - checkbox \"Yuzu tea service +$9\" [checked]",
+              "- heading \"6. Your details\"",
+              "  - generic: Full name",
+              "  - textbox \"Full name\": Mika Tanaka",
+              "- button \"Confirm booking\""
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "guest-classic",
+      "say": "Here is one guest on the classic form, finding its way by position and context.",
+      "visual": {
+        "type": "guest",
+        "dir": "video/build/guest-classic",
+        "who": "AI guest on the classic form",
+        "tone": "orange",
+        "pick": [
+          1,
+          2,
+          4,
+          8,
+          9,
+          12
+        ]
+      }
+    },
+    {
+      "id": "guest-accessible",
+      "say": "And one on the accessible form, reading names.",
+      "visual": {
+        "type": "guest",
+        "dir": "video/build/guest-accessible",
+        "who": "AI guest on the accessible form",
+        "tone": "teal",
+        "pick": [
+          1,
+          2,
+          4,
+          8,
+          9,
+          12
+        ]
+      }
+    }
+  ]
+}

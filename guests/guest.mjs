@@ -110,8 +110,11 @@ async function servedVersion(page) {
     .catch(() => null);
 }
 
-export async function runGuest({ browser, base, brief, task, llm, maxSteps = 40, temperature = 0.7, timeoutMs = 6 * 60_000 }) {
-  const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: 'reduce' });
+// `recorder`, when given, is called just before each action with the page, the
+// step and the on-screen box of the element about to be used. It exists for
+// the demo video; experiment runs do not pass one.
+export async function runGuest({ browser, base, brief, task, llm, maxSteps = 40, temperature = 0.7, timeoutMs = 6 * 60_000, viewport = { width: 1280, height: 900 }, deviceScaleFactor = 1, recorder = null }) {
+  const context = await browser.newContext({ viewport, deviceScaleFactor, reducedMotion: 'reduce' });
   const page = await context.newPage();
   page.setDefaultTimeout(8000);
 
@@ -164,9 +167,17 @@ export async function runGuest({ browser, base, brief, task, llm, maxSteps = 40,
       if (a.action === 'done' || a.action === 'give_up') {
         record.outcome = a.action;
         record.steps.push({ n, thought, action: a.action, url: observation.url });
+        await recorder?.({ page, n, action: a.action, thought, target: null, box: null });
         break;
       }
       const targetLine = typeof a.ref === 'string' ? describeRef(observation.snapshot, a.ref) : null;
+      if (recorder) {
+        const real = observation.refs.get(a.ref);
+        const element = real ? page.locator(`aria-ref=${real}`) : null;
+        await element?.scrollIntoViewIfNeeded({ timeout: 2000 }).catch(() => {});
+        const box = element ? await element.boundingBox().catch(() => null) : null;
+        await recorder({ page, n, action: a.action, text: a.text, thought, target: targetLine, box });
+      }
       lastResult = await act(page, a, observation.refs);
       record.actions++;
       record.steps.push({
