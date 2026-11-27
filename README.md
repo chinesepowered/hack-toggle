@@ -75,7 +75,7 @@ This is what we registered beforehand: bookings and steps hold, and the token gu
 > "1:00 PM didn't register in the summary, suggesting it's sold out. Trying the next later time, 2:30 PM."
 > "Time still shows 'Not chosen yet'; I'll try clicking 1:00 PM again to select it."
 
-On the accessible form the same time reads `radio "1:00 PM" [disabled]`, and no guest clicked one. The other 4 detours were the guest stepper, whose plus and minus have no names on the classic form: each of those guests pressed the wrong one first. Every detour is listed in [experiments/results/detours.csv](experiments/results/detours.csv), and every guest's transcript is in [transcripts-all.tar.gz](experiments/results/transcripts-all.tar.gz).
+On the accessible form the same time reads `radio "1:00 PM" [disabled]`, and no guest clicked one. The other 4 detours were the guest stepper, whose plus and minus have no names on the classic form: each of those guests, part of the way up to its number, pressed minus once and had to press plus again. Every detour is listed in [experiments/results/detours.csv](experiments/results/detours.csv), and every guest's transcript is in [transcripts-all.tar.gz](experiments/results/transcripts-all.tar.gz).
 
 **Why the accessible form costs more anyway.** Each step's prompt is 22% longer on the accessible form (2,897 tokens against 2,381), because the page's accessibility snapshot is longer and a guest reads it again on every step. Fewer steps and shorter replies do not make up for that, so the net is 13.6% more tokens per guest.
 
