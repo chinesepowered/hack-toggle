@@ -7,7 +7,8 @@
 // the keys the app and the Flagsmith CLI need.
 //
 // Nothing about the experiment itself is created here. The flag, metrics and
-// experiment are created through the Flagsmith CLI by skills/run-experiment.
+// experiment are created through the Flagsmith CLI by the fx script in
+// skills/flagsmith-experiment.
 //
 // Output (both git-ignored):
 //   .flagsmith/flagsmith.env   credentials to `source` before using the CLI
@@ -79,7 +80,7 @@ async function main() {
     console.log(`Created admin account ${admin.email}`);
   } else {
     if (!admin) {
-      throw new Error(`The instance already has users but ${STATE_FILE} is missing, so the admin login is unknown. Reset with: docker compose down -v`);
+      throw new Error(`The instance already has users but ${STATE_FILE} is missing, so the admin login is unknown. Start over with: npm run flagsmith:reset`);
     }
     token = (await api('POST', '/api/v1/auth/login/', { email: admin.email, password: admin.password })).key;
     console.log(`Logged in as ${admin.email}`);
@@ -149,6 +150,9 @@ async function main() {
       `export FLAGSMITH_API_URL=${BASE}`,
       `export FLAGSMITH_API_KEY_${hostKey}=${cliKey}`,
       `export FLAGSMITH_PROJECT=${project.id}`,
+      '# The default environment for the CLI and fx is Staging (a client-side key, not a secret).',
+      '# Production is never the default: pass -e <key> for it.',
+      `export FLAGSMITH_ENVIRONMENT=${state.environments.staging.clientKey}`,
       '',
     ].join('\n'),
   );

@@ -51,7 +51,9 @@ Options:
       --log FILE           append the action to this file (default experiments/approvals.tsv)
   ship:
       --winner control|KEY which variation everyone gets from now on
-      --force              ship even if the primary metric is not conclusive
+      --force              ship although fx refuses (primary not conclusive or losing, a breached
+                           guardrail, a broken split). Only after the user has seen the reason and
+                           accepted it; never in a sandbox.
 EOF
 }
 
@@ -303,7 +305,8 @@ cmd_start() {
   # back to back, and remove it again if the start does not go through.
   XID=$(api experiments/ --input - --jq .id <<<"$body")
   if ! api "experiments/$XID/start/" -X POST --jq '"experiment id=\(.id) status=\(.status) started=\(.started_at)"'; then
-    api "experiments/$XID/" -X DELETE >/dev/null 2>&1 || true
+    api "experiments/$XID/" -X DELETE >/dev/null 2>&1 ||
+      die "could not start experiment id=$XID and could not remove it either. It may already be serving the variation: run fx stop, or delete it in the dashboard, then fx check"
     die "could not start the experiment; it was removed again and nothing has changed for users"
   fi
   # The record is written straight after the change, before anything else can fail.
@@ -348,8 +351,8 @@ cmd_status() {
 # ---- results -----------------------------------------------------------------
 
 # One line per metric, then the sample-ratio check, e.g.
-#   Booking correct  control 34/61 55.7%  accessible 62/79 78.5%  lift +40.8% [+5.1%, +76.5%]  chance 98.7%  WINNING
-#   sample ratio: ok (control 61 / variation 79, expected 50/50, p=0.128)
+#   Guest steps  control n=156 mean 11.81  accessible n=144 mean 11.27  lift -4.6% [-7.9%, -1.3%]  chance 99.7%  guardrail ok
+#   sample ratio: ok (control 156 / variation 144, expected 50/50, p=0.488)
 #
 # Verdicts follow Flagsmith's documented thresholds: at least 95% chance to beat
 # the control is WINNING, at most 5% is LOSING. A guardrail (expected
@@ -405,6 +408,20 @@ fetch_results() {
   api "experiments/$XID/results/" | jq -r --argjson x "$experiment" --argjson split "$split" "$RESULTS_JQ"
 }
 
+# Ask Flagsmith to recompute the results and wait for them. Refreshes are limited
+# to one every 5 minutes; a throttled call is not an error, and returns 1.
+refresh_results() {
+  local before after tries=0
+  before=$(api "experiments/$XID/results/" --jq '.results.as_of // "none"')
+  api "experiments/$XID/results/refresh/" -X POST >/dev/null 2>&1 || return 1
+  while [ $tries -lt 15 ]; do
+    sleep 2
+    after=$(api "experiments/$XID/results/" --jq '.results.as_of // "none"')
+    [ "$after" = "$before" ] || break
+    tries=$((tries + 1))
+  done
+}
+
 cmd_results() {
   find_latest_experiment
   if [ "$XSTATUS" = completed ]; then
@@ -413,19 +430,7 @@ cmd_results() {
     fetch_results
     return
   fi
-  local before after tries=0
-  before=$(api "experiments/$XID/results/" --jq '.results.as_of // "none"')
-  # Refreshes are limited to one every 5 minutes; a throttled call is not an error.
-  if api "experiments/$XID/results/refresh/" -X POST >/dev/null 2>&1; then
-    while [ $tries -lt 15 ]; do
-      sleep 2
-      after=$(api "experiments/$XID/results/" --jq '.results.as_of // "none"')
-      [ "$after" = "$before" ] || break
-      tries=$((tries + 1))
-    done
-  else
-    echo "note: refresh throttled (once per 5 minutes); showing the last computed results"
-  fi
+  refresh_results || echo "note: refresh throttled (once per 5 minutes); showing the last computed results"
   local summary
   summary=$(fetch_results)
   echo "$summary"
@@ -453,24 +458,30 @@ cmd_ship() {
   [ -n "$WINNER" ] || die "ship needs --winner control|KEY"
   require_experiment
   local summary primary body vid served_value
+  # Judge the newest results Flagsmith will compute, not whatever was read last.
+  refresh_results || true
   summary=$(fetch_results)
   primary=$(grep -m 1 '(primary)' <<<"$summary" || true)
   # Work out whether the results allow this, whatever --force says, so that an
-  # override is always stated and recorded for what it is.
+  # override is always stated and recorded for what it is. Only the variation
+  # can be blocked: going back to the control is what fx stop does anyway.
   local blocked=""
-  if grep -q 'MISMATCH' <<<"$summary"; then
-    blocked="sample ratio mismatch: the split is broken, so the results cannot be trusted"
-  elif grep -q 'GUARDRAIL BREACHED' <<<"$summary" && [ "$WINNER" != control ]; then
-    # A breached guardrail blocks the variation whichever metric it is on.
-    blocked="a guardrail is breached: $(grep 'GUARDRAIL BREACHED' <<<"$summary" | sed 's/  .*//' | paste -sd, -)"
-  elif [ "$WINNER" != control ]; then
-    case $primary in
-      *"guardrail ok"* | *WINNING*) ;; # a do-no-harm primary only has to hold
-      *LOSING*) blocked="the primary metric says the variation is losing" ;;
-      "") blocked="there are no results for the primary metric yet" ;;
-      *) blocked="the primary metric is not conclusive (${primary%%  *})" ;;
-    esac
-  elif [[ $primary == *WINNING* ]] && [ $FORCE -eq 0 ]; then
+  if [ "$WINNER" != control ]; then
+    if grep -q 'MISMATCH' <<<"$summary"; then
+      blocked="sample ratio mismatch: the split is broken, so the results cannot be trusted"
+    elif grep -q 'GUARDRAIL BREACHED' <<<"$summary"; then
+      # A breached guardrail blocks the variation whichever metric it is on.
+      blocked="a guardrail is breached: $(grep 'GUARDRAIL BREACHED' <<<"$summary" | sed 's/  .*//' | paste -sd, -)"
+    else
+      case $primary in
+        *"guardrail ok"* | *WINNING*) ;; # a do-no-harm primary only has to hold
+        *LOSING*) blocked="the primary metric says the variation is losing" ;;
+        "") blocked="there are no results for the primary metric yet" ;;
+        *) blocked="the primary metric is not conclusive (${primary%%  *})" ;;
+      esac
+    fi
+  elif [[ $primary == *WINNING* ]] && ! grep -q 'MISMATCH' <<<"$summary" && [ $FORCE -eq 0 ]; then
+    # Not a refusal on the results, only a guard against a slip of the keyboard.
     die "the primary metric favours the variation, but --winner is control. Use --force if that is intended."
   fi
   [ -z "$blocked" ] || [ $FORCE -eq 1 ] || refuse "$blocked"

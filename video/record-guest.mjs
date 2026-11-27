@@ -5,8 +5,11 @@
 //   node video/record-guest.mjs --guest video_classic --out video/build/guest-classic
 //
 // The guest is a real run of the same harness the experiment uses. Which form
-// version it gets is whatever Flagsmith serves that identity (for the video,
-// an identity override in Staging pins each recorded guest to one version).
+// version it gets is whatever Flagsmith serves that identity. For the video,
+// an identity override in Staging pins each recorded guest to one version:
+//
+//   flagsmith flag update booking_form --value classic    --identifier video_classic    --yes
+//   flagsmith flag update booking_form --value accessible --identifier video_accessible --yes
 
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';

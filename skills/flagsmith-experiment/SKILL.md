@@ -3,7 +3,7 @@ name: flagsmith-experiment
 description: Runs a complete A/B test on Flagsmith with the Flagsmith CLI, from a written plan through pre-launch checks, a human-approved start, results with a verdict, and rollout of the winner. Use when the user wants to test a change behind a feature flag, prove that a change works or does no harm, check on a running experiment, or ship or stop one.
 compatibility: Requires bash, jq and the Flagsmith CLI v2+ (flagsmith), already authenticated and bound to a project. The Flagsmith environment needs a connected warehouse.
 metadata:
-  version: "1.2"
+  version: "1.3"
 ---
 
 # Run a Flagsmith experiment
@@ -46,7 +46,7 @@ Before the first command, run `flagsmith config`. It must show a project and an 
 7. **Stop and ask again,** with the results. Then `fx ship --flag <flag> --winner <key|control> --approved-by "<their name>"`.
    - Shipping the variation needs a `WINNING` goal primary or a `guardrail ok` guardrail primary, no breached guardrail, and an `ok` sample ratio. Otherwise `fx` refuses and records the attempt.
    - `--force` overrides the refusal. Use it only after the user has seen the specific problem and accepted it.
-   - `--winner control` is always allowed. `fx stop` does the same thing without an approval.
+   - No result blocks `--winner control`; `fx` only asks for `--force` when the primary is `WINNING`, in case it is a slip. `fx stop` does the same thing without an approval.
 
 8. **Clean up,** only after a variation has shipped for good: delete the losing code path, then retire the flag. Skip this after a stop or a rehearsal.
 

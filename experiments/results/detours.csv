@@ -1,0 +1,25 @@
+guest,version,extra_actions,clicks_on_sold_out_times,other_extra_actions,preferred_time_sold_out,correct,guest_note_after_the_first_wasted_action
+prod1_g0003,classic,1,1,0,1,1,"5:30 PM is not selectable (sold out), so I'll pick the next later time, 7:00 PM."
+prod1_g0038,classic,2,2,0,1,1,"The 2:30 PM time is still selectable, so I'll click it to choose it."
+prod1_g0040,classic,1,1,0,1,1,"5:30 PM is not clickable (sold out), so I'll book the next later available time, 7:00 PM."
+prod1_g0056,classic,2,2,0,1,1,Time still shows not chosen; re-click 1:00 PM.
+prod1_g0067,classic,1,1,0,1,1,"5:30 PM didn't register (still Not chosen yet), so I'll pick the next later time, 7:00 PM."
+prod1_g0069,classic,1,1,0,1,1,5:30 PM is sold out (no cursor=pointer). The next later available time is 7:00 PM.
+prod1_g0079,classic,1,1,0,1,1,"11:30 AM is not clickable (sold out), so select the next later available time, 1:00 PM."
+prod1_g0094,classic,6,6,0,1,1,Summary still shows 7:00 PM; let me try selecting 4:00 PM again to check if it's available.
+prod1_g0097,classic,2,0,2,0,1,Increase guests from 4 to 6 by clicking the increment button again.
+prod1_g0107,classic,2,0,2,0,1,Guests still shows 4; let me try the other button e70 to increase toward 5.
+prod1_g0158,classic,1,1,0,1,1,"4:00 PM is sold out; pick the next later available time, 5:30 PM."
+prod1_g0170,classic,1,1,0,1,1,"11:30 AM (e61) has no cursor=pointer, meaning it's sold out. The next later available time is 1:00 PM (e62)."
+prod1_g0186,classic,1,1,0,1,1,"1:00 PM appears sold out since the time is still 'Not chosen yet', so I'll try the next later time, 2:30 PM."
+prod1_g0202,classic,1,1,0,1,1,"2:30 PM is not selectable (no cursor), so it's sold out; the next later available time is 4:00 PM."
+prod1_g0208,classic,1,1,0,1,1,"11:30 AM is not selectable (sold out), so I'll pick the next later available time, 1:00 PM."
+prod1_g0212,classic,1,1,0,1,1,4:00 PM appears sold out (no longer clickable and time not chosen); selecting the next later time 5:30 PM.
+prod1_g0224,classic,2,0,2,1,1,Increase guests from 4 to 6 by clicking the plus button.
+prod1_g0257,classic,5,5,0,1,1,"The time still shows 'Not chosen yet', so the 1:00 PM selection didn't register. Click it again."
+prod1_g0266,classic,2,2,0,1,1,"4:00 PM and 5:30 PM are both sold out (no cursor pointer). The next later available time is 7:00 PM, so I'll click that."
+prod1_g0271,classic,2,0,2,0,1,Guests still shows 4; try the other stepper button e71.
+prod1_g0277,classic,4,4,0,1,1,"The time didn't register, so I'll click 1:00 PM again."
+prod1_g0280,classic,9,9,0,1,1,"1:00 PM didn't register in the summary, suggesting it's sold out. Trying the next later time, 2:30 PM."
+prod1_g0292,classic,2,2,0,1,1,"The time still shows Not chosen yet, so I'll click 4:00 PM again."
+prod1_g0296,classic,1,1,0,1,1,"1:00 PM is sold out (no longer clickable), so I'll pick the next later available time, 2:30 PM."

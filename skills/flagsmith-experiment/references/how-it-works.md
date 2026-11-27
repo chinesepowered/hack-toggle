@@ -11,14 +11,14 @@ Read this when a step fails in a way the command's own output does not explain. 
 | `start` | `flagsmith api …/experiments/` (create), then `…/experiments/<id>/start/` | Yes |
 | `status` | `…/exposures/refresh/`, `…/exposures/` | No |
 | `results` | `…/results/refresh/`, `…/results/`, `…/experiments/<id>/` | No |
-| `ship` | `…/experiments/<id>/complete/` with a rollout decision, then `flagsmith evaluate` ×20 | Yes |
+| `ship` | `…/results/refresh/`, `…/results/`, `…/experiments/<id>/complete/` with a rollout decision, then `flagsmith evaluate` ×20 | Yes |
 | `stop` | `…/experiments/<id>/complete/` with decision `control` | Yes, back to the control |
 
 Paths are relative to `api/v1/environments/<environment key>/`.
 
 `status` and `results` act on the unfinished experiment on the flag, or on the latest finished one if there is none, so results stay readable after a ship or a stop. `stop` and `ship --winner control` send Flagsmith the same decision; the difference is that `ship` records who approved it.
 
-The CLI asks for confirmation before its own write commands and needs `--yes` when there is no terminal. `fx` writes through `flagsmith api`, which does not prompt, so the approval gate in `fx` is the only gate.
+Some of the CLI's own write commands ask for confirmation and need `--yes` when there is no terminal. `fx` starts, ships and stops through `flagsmith api`, which does not prompt, so the approval gate in `fx` is the only gate on what users are served. `setup` uses `flagsmith feature create` and `flagsmith feature variant add`, which change nothing users see.
 
 ## Why the experiment is created at `start`, not at `setup`
 
@@ -38,14 +38,17 @@ So `fx` keeps the plan in a spec file, where it changes nothing, and creates and
 ## Reading `results`
 
 ```
-Booking correct  control 34/61 55.7%  accessible 62/79 78.5%  lift +40.8% [+5.1%, +76.5%]  chance 98.7%  WINNING
-sample ratio: ok (control 61 / variation 79, expected 50/50, p=0.128)
+Booking correct (primary)  control 156/156 100%  accessible 144/144 100%  lift +0% [+0%, +0%]  chance 50%  guardrail ok
+Guest tokens  control n=156 mean 32090.93  accessible n=144 mean 36464.77  lift +13.6% [+8.9%, +18.4%]  chance 0%  GUARDRAIL BREACHED
+sample ratio: ok (control 156 / variation 144, expected 50/50, p=0.488)
 ```
+
+These lines are real: two of the four metrics of the experiment this skill was built for. An occurrence metric shows converted identities over exposed identities; a mean metric shows the number of identities and the mean per identity.
 
 - Metrics are printed in the order the experiment lists them, which is the order of the spec. The first is the primary and is the one `ship` judges.
 - `lift` is the relative change against the control; the bracket is Flagsmith's 95% credible interval.
 - `chance` is Flagsmith's chance to beat the control, already oriented by the metric's direction (for a lower-is-better metric, a drop is a win).
-- Verdicts use Flagsmith's documented thresholds: 95% or more is `WINNING`, 5% or less is `LOSING`. A guardrail is `BREACHED` only at 5% or less.
+- The numbers are Flagsmith's. The verdict word is `fx` applying Flagsmith's documented thresholds to `chance`: for a goal, 95% or more is `WINNING` and 5% or less is `LOSING`; a guardrail is `BREACHED` only at 5% or less. `ship` asks for a fresh computation and judges that.
 - `collecting data` means a variation has fewer than 50 identities or 5 conversions; Flagsmith computes nothing below that.
 - Refreshes are limited to one every 5 minutes. A throttled refresh prints a note and the last computed results.
 

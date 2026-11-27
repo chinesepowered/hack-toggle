@@ -17,9 +17,10 @@
 # unattended. It never ships: read the results and run `fx ship` or `fx stop`
 # yourself.
 #
-# Needs: docker with compose v2, node >= 22, jq, the Flagsmith CLI v2
+# Needs: docker with compose v2, node >= 22, jq, curl, the Flagsmith CLI v2
 # (https://docs.flagsmith.com/integrating-with-flagsmith/CLI), and a .env with
-# an OpenAI-compatible endpoint for the guests (see .env.example).
+# an OpenAI-compatible endpoint for the guests (see .env.example). The first run
+# also downloads Playwright's Chromium, which the guests drive.
 
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -28,17 +29,28 @@ GUESTS=${GUESTS:-120}
 PORT=${PORT:-3000}
 RUN_ID=${RUN_ID:-demo$(date +%m%d%H%M%S)}
 FX=skills/flagsmith-experiment/scripts/fx
+stop() { echo "demo: $*" >&2; exit 1; }
 
-for tool in docker node jq flagsmith; do
-  command -v "$tool" >/dev/null || { echo "demo: '$tool' is required" >&2; exit 1; }
+for tool in docker node jq curl flagsmith; do
+  command -v "$tool" >/dev/null || stop "'$tool' is required"
 done
-[ -f .env ] || { echo "demo: copy .env.example to .env and fill it in first" >&2; exit 1; }
+CLI_VERSION=$(flagsmith --version 2>&1) || true
+[[ $CLI_VERSION =~ v([2-9]|[1-9][0-9])\. ]] || stop "the Flagsmith CLI must be v2 or later (found: ${CLI_VERSION%%$'\n'*})"
+[ -f .env ] || stop "copy .env.example to .env and fill it in first"
 # Something already answering on the site's port would be mistaken for this run's site.
 if curl -s -o /dev/null "http://localhost:$PORT/"; then
-  echo "demo: port $PORT is already in use. Stop what is running there, or pick another: PORT=3100 $0" >&2
-  exit 1
+  stop "port $PORT is already in use. Stop what is running there, or pick another: PORT=3100 $0"
+fi
+# Flagsmith's API and dashboard are published on port 8000.
+if [ -z "$(docker compose ps -q flagsmith 2>/dev/null)" ] && curl -s -o /dev/null "http://localhost:8000/"; then
+  stop "port 8000 is already in use by something other than this project's Flagsmith. Stop it first."
 fi
 [ -d node_modules ] || npm install --no-audit --no-fund
+# The guests drive Chromium through Playwright, which uses its own build of it.
+if ! node -e "require('fs').accessSync(require('playwright').chromium.executablePath())" 2>/dev/null; then
+  echo "==> downloading Playwright's Chromium (once, about 170 MB)"
+  npx playwright install chromium
+fi
 
 echo "==> 1/6 Flagsmith"
 docker compose up -d --wait
@@ -60,7 +72,7 @@ for _ in $(seq 1 40); do
   curl -fs "http://localhost:$PORT/healthz" >/dev/null 2>&1 && break
   sleep 0.5
 done
-if ! kill -0 "$APP_PID" 2>/dev/null || ! curl -fs "http://localhost:$PORT/healthz" | grep -q '"flagsmith":true'; then
+if ! kill -0 "$APP_PID" 2>/dev/null || [[ $(curl -fs "http://localhost:$PORT/healthz") != *'"flagsmith":true'* ]]; then
   echo "demo: the booking site did not start, or cannot reach Flagsmith. Its log:" >&2
   tail -n 15 data/logs/app-staging.log >&2
   exit 1
@@ -68,9 +80,19 @@ fi
 
 echo "==> 4/6 set up, rehearse, check, start"
 $FX setup --flag booking_form
+# An earlier demo on this instance may have left the flag in a state that cannot be tested again.
+EARLIER=$($FX status --flag booking_form) || stop "could not read the experiment's status from Flagsmith"
+case $EARLIER in
+  *status=completed*decision=variant*)
+    stop "the accessible form has already been shipped on this instance, so there is no control left to test against. Start over: npm run flagsmith:reset" ;;
+  *status=completed* | "no experiment"*) ;;
+  *)
+    stop "an experiment from an earlier run is still open here ($EARLIER). End it with: source .flagsmith/flagsmith.env && $FX stop --flag booking_form. Or start over: npm run flagsmith:reset" ;;
+esac
 npm run --silent guests -- --env staging --base "http://localhost:$PORT" --n 2 --run-id "$RUN_ID-rehearsal" >"data/logs/$RUN_ID-rehearsal.log" 2>&1 ||
   { echo "demo: the rehearsal failed. Its log:" >&2; tail -n 15 "data/logs/$RUN_ID-rehearsal.log" >&2; exit 1; }
-$FX check --flag booking_form
+$FX check --flag booking_form ||
+  stop "the pre-launch check failed. If an event 'has never been received', the two rehearsal guests did not get that far: see data/logs/$RUN_ID-rehearsal.log. A weaker guest model may fail the booking itself."
 $FX start --flag booking_form --log data/logs/demo-approvals.log
 
 echo "==> 5/6 $GUESTS AI guests (about 5 seconds each; log: data/logs/$RUN_ID.log)"
@@ -80,7 +102,16 @@ tail -n 8 "data/logs/$RUN_ID.log"
 
 echo "==> 6/6 results"
 $FX results --flag booking_form
-echo
-echo "Dashboard: http://localhost:8000 (login in .flagsmith/state.json)"
-echo "Decide:    $FX ship --flag booking_form --winner accessible --approved-by NAME"
-echo "       or  $FX stop --flag booking_form"
+
+cat <<EOF
+
+Done in $((SECONDS / 60)) min $((SECONDS % 60)) s. Nothing has been shipped: the experiment is still running in Staging.
+Dashboard: http://localhost:8000 (login in .flagsmith/state.json)
+Site:      it stopped with this script. Start it again with: npm run app
+Decide, in this terminal:
+  source .flagsmith/flagsmith.env
+  $FX stop --flag booking_form
+  $FX ship --flag booking_form --winner accessible --approved-by "Your name"
+       (ship is refused while a guardrail is breached; add --force only to accept that cost)
+Start over from nothing: npm run flagsmith:reset
+EOF
