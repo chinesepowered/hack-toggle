@@ -242,6 +242,42 @@
           ]
         }
       }
+    },
+    {
+      "id": "decision",
+      "say": "So when the agent tries to ship, the skill refuses. A breached guardrail needs a person. A person was shown the result and accepted the cost: the upgrade is for people, and agents book just as well. Flagsmith rolled it out to everyone.",
+      "visual": {
+        "type": "card",
+        "template": "terminal",
+        "data": {
+          "heading": "The skill refuses. A person decides.",
+          "small": true,
+          "parts": [
+            {
+              "cmd": "fx ship --flag booking_form --winner accessible",
+              "file": "experiments/results/log/6-ship-refused.txt"
+            },
+            {
+              "cmd": "fx ship --flag booking_form --winner accessible --approved-by \"Nelson\" --force",
+              "file": "experiments/results/log/7-ship.txt",
+              "to": 4
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "close",
+      "say": "One experiment, an answer we did not expect, and a result nobody scripted. It all runs on open-source Flagsmith, and you can rerun every step with one command.",
+      "hold": 1.2,
+      "visual": {
+        "type": "card",
+        "template": "title",
+        "data": {
+          "title": "One experiment. A result nobody scripted.",
+          "sub": "Capybara Onsen · self-hosted Flagsmith · github.com/chinesepowered/hack-toggle"
+        }
+      }
     }
   ]
 }
