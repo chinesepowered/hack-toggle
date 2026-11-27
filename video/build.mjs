@@ -32,8 +32,8 @@ const script = JSON.parse(readFileSync(join(HERE, 'script.json'), 'utf8'));
 const W = 1920;
 const H = 1080;
 const FPS = 30;
-const LEAD = 0.35; // silence before a line
-const TAIL = 0.55; // silence after it
+const LEAD = 0.3; // silence before a line
+const TAIL = 0.4; // silence after it
 
 for (const dir of ['frames', 'html', 'audio', 'segments']) mkdirSync(join(BUILD, dir), { recursive: true });
 mkdirSync(OUT, { recursive: true });

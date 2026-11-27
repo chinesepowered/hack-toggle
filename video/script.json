@@ -71,7 +71,7 @@
     },
     {
       "id": "agentview",
-      "say": "But an AI agent does not look at pixels. It reads the accessibility tree. And there, the two versions could hardly be more different: unnamed controls on one side, buttons with names and states on the other.",
+      "say": "But an AI agent does not look at pixels. It reads the accessibility tree, and there the two versions could hardly be more different.",
       "visual": {
         "type": "card",
         "template": "snapshots",
@@ -132,12 +132,12 @@
     },
     {
       "id": "question",
-      "say": "So what does the upgrade do to the AI guests? We started out expecting it to help. Two small pilots disagreed: every guest booked correctly on both versions. So before the real run, we registered a different prediction: bookings will hold, and tokens will go up.",
+      "say": "So what does the upgrade do to the AI guests? We expected it to help. Two small pilots disagreed, so before the real run we registered a different prediction: bookings will hold, and tokens will go up.",
       "visual": {
         "type": "cards",
         "cards": [
           {
-            "weight": 85,
+            "weight": 60,
             "template": "title",
             "data": {
               "title": "Does the upgrade help the AI guests, or hurt them?",
@@ -145,7 +145,7 @@
             }
           },
           {
-            "weight": 180,
+            "weight": 140,
             "template": "registered",
             "data": {
               "heading": "Registered before the run",
@@ -171,7 +171,7 @@
     },
     {
       "id": "flag",
-      "say": "Both versions sit behind one Flagsmith feature flag. A Flagsmith experiment splits the guests fifty-fifty and watches four metrics: correct bookings, completed bookings, steps, and tokens.",
+      "say": "Both versions sit behind one Flagsmith feature flag. A Flagsmith experiment splits the guests fifty-fifty and tracks four metrics.",
       "visual": {
         "type": "card",
         "template": "crops",
@@ -199,19 +199,17 @@
     },
     {
       "id": "guest-classic",
-      "say": "The guests are language models driving real browsers, with no hint about which version they were served. Watch this one on the classic form. Its preferred time is sold out, and the only clue in the markup is a missing pointer cursor. It clicks, nothing happens, and it clicks again. This is the worst case we saw. Most detours were one or two wasted clicks.",
+      "say": "The guests are language models driving real browsers. Watch this one on the classic form. Its preferred time is sold out, and the only clue in the markup is a missing pointer cursor. It clicks, nothing happens, and it clicks again. This was the worst case we saw.",
       "visual": {
         "type": "guest",
         "dir": "video/build/guest2-classic-1",
         "who": "AI guest on the classic form",
         "tone": "orange",
         "pick": [
-          1,
           2,
           3,
           4,
           5,
-          6,
           7,
           8
         ]
@@ -234,12 +232,12 @@
     },
     {
       "id": "check",
-      "say": "The experiment itself is run by a coding agent, using a skill we built on the Flagsmith command line. Before anything goes live, it checks that every event really arrives, and that every user still gets the control. Then it stops, and waits for a person to approve the start.",
+      "say": "A coding agent runs the experiment, using a skill we built on the Flagsmith command line. Before anything goes live, it checks that every event arrives and that every user still gets the control. Then it waits for a person to approve the start.",
       "visual": {
         "type": "cards",
         "cards": [
           {
-            "weight": 212,
+            "weight": 190,
             "template": "terminal",
             "data": {
               "heading": "An agent runs it. A person approves it.",
@@ -253,7 +251,7 @@
             }
           },
           {
-            "weight": 80,
+            "weight": 60,
             "template": "terminal",
             "data": {
               "heading": "An agent runs it. A person approves it.",
@@ -287,7 +285,7 @@
     },
     {
       "id": "verdict",
-      "say": "Correct bookings: 156 out of 156 on the classic form, and 144 out of 144 on the accessible one. No difference at all. Steps went down a little. But tokens per guest went up by almost fourteen percent, and that guardrail is breached.",
+      "say": "Correct bookings: 156 out of 156 on the classic form, and 144 out of 144 on the accessible one. No difference at all. But tokens per guest went up by almost fourteen percent, and that guardrail is breached.",
       "visual": {
         "type": "card",
         "template": "verdict",
@@ -299,7 +297,7 @@
     },
     {
       "id": "why",
-      "say": "Why? A capable agent recovers from its mistakes, so the bookings come out right either way. But on the classic form, 24 guests took a detour first. On the accessible form, none did. And yet the accessible page takes longer to read, on every single step. Fewer mistakes, more reading. The reading wins.",
+      "say": "Why? A capable agent recovers from its mistakes, so the bookings come out right either way. On the classic form, 24 guests took a detour first. On the accessible form, none did. But the accessible page takes longer to read on every step, and the reading wins.",
       "visual": {
         "type": "card",
         "template": "stats",
@@ -340,12 +338,12 @@
     },
     {
       "id": "decision",
-      "say": "So when the agent tries to ship, the skill refuses. A breached guardrail needs a person. A person was shown the result and accepted the cost: the upgrade is for people, and agents book just as well. Flagsmith rolled it out to everyone.",
+      "say": "So when the agent tries to ship, the skill refuses: a breached guardrail needs a person. A person saw the result and accepted the cost, because the upgrade is for people. Flagsmith rolled it out to everyone.",
       "visual": {
         "type": "cards",
         "cards": [
           {
-            "weight": 87,
+            "weight": 88,
             "template": "terminal",
             "data": {
               "heading": "The skill refuses. A person decides.",
@@ -358,7 +356,7 @@
             }
           },
           {
-            "weight": 108,
+            "weight": 80,
             "template": "terminal",
             "data": {
               "heading": "The skill refuses. A person decides.",
@@ -376,7 +374,7 @@
             }
           },
           {
-            "weight": 52,
+            "weight": 45,
             "template": "picture",
             "data": {
               "image": "docs/flagsmith-shipped.png"
@@ -387,7 +385,7 @@
     },
     {
       "id": "skill",
-      "say": "The skill is small on purpose. Its instructions are about sixteen hundred tokens, and its commands print one fact per line. A fresh agent, working from the skill and a short prompt, ran the whole job in fifteen tool calls.",
+      "say": "The skill is small on purpose: about sixteen hundred tokens of instructions, and one fact per line of output. A fresh agent ran the whole job with it in fifteen tool calls.",
       "visual": {
         "type": "card",
         "template": "stats",
@@ -428,12 +426,12 @@
     },
     {
       "id": "rerun",
-      "say": "And you can check it yourself. On a fresh clone, one command starts open-source Flagsmith, the booking site, and a hundred and twenty new guests. We ran it twice. Both times, no guest on the accessible form wasted a click, and the token bill was higher.",
+      "say": "And one command reruns all of it on self-hosted, open-source Flagsmith. We did that twice, and saw the same pattern.",
       "visual": {
         "type": "cards",
         "cards": [
           {
-            "weight": 150,
+            "weight": 62,
             "template": "terminal",
             "data": {
               "heading": "One command reruns the whole experiment",
@@ -449,7 +447,7 @@
             }
           },
           {
-            "weight": 125,
+            "weight": 100,
             "template": "stats",
             "data": {
               "heading": "We reran it twice, from fresh clones",
@@ -475,12 +473,13 @@
             }
           }
         ]
-      }
+      },
+      "hold": 2.0
     },
     {
       "id": "close",
       "say": "One experiment, a prediction registered in advance, and a result nobody scripted.",
-      "hold": 1.2,
+      "hold": 0.8,
       "visual": {
         "type": "card",
         "template": "title",
