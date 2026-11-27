@@ -1,0 +1,86 @@
+{
+  "id": 8,
+  "feature": {
+    "id": 1,
+    "name": "booking_form",
+    "type": "MULTIVARIATE",
+    "initial_value": "classic",
+    "multivariate_options": [
+      {
+        "id": 1,
+        "uuid": "64e12c18-e926-403f-80f5-bc8b7e13d2a6",
+        "type": "unicode",
+        "integer_value": null,
+        "string_value": "accessible",
+        "boolean_value": null,
+        "default_percentage_allocation": 0,
+        "key": "accessible"
+      }
+    ]
+  },
+  "name": "Accessible booking form and AI guests",
+  "hypothesis": "The accessible booking form does not reduce correct bookings by AI guests compared with the classic form. Two staging pilots (140 guests) saw 100% correct bookings in both versions and about 18% more tokens per guest in the accessible version, so we expect bookings to hold and the token guardrail to be breached.",
+  "status": "running",
+  "metrics": [
+    {
+      "id": 28,
+      "metric": 5,
+      "metric_name": "Booking correct",
+      "aggregation": "occurrence",
+      "direction": "up",
+      "expected_direction": "not_decrease",
+      "created_at": "2026-11-26T23:49:38.595446Z"
+    },
+    {
+      "id": 29,
+      "metric": 6,
+      "metric_name": "Booking completed",
+      "aggregation": "occurrence",
+      "direction": "up",
+      "expected_direction": "not_decrease",
+      "created_at": "2026-11-26T23:49:38.595460Z"
+    },
+    {
+      "id": 30,
+      "metric": 7,
+      "metric_name": "Guest steps",
+      "aggregation": "mean",
+      "direction": "down",
+      "expected_direction": "not_increase",
+      "created_at": "2026-11-26T23:49:38.595466Z"
+    },
+    {
+      "id": 31,
+      "metric": 8,
+      "metric_name": "Guest tokens",
+      "aggregation": "mean",
+      "direction": "down",
+      "expected_direction": "not_increase",
+      "created_at": "2026-11-26T23:49:38.595472Z"
+    }
+  ],
+  "experiment_rollout": {
+    "enabled": true,
+    "rollout_percentage": 100,
+    "feature_state_value": {
+      "type": "string",
+      "value": "classic"
+    },
+    "multivariate_feature_state_values": [
+      {
+        "multivariate_feature_option": 1,
+        "percentage_allocation": 50
+      }
+    ],
+    "audience": {
+      "match": "any",
+      "segments": []
+    }
+  },
+  "created_at": "2026-11-26T23:49:38.592531Z",
+  "updated_at": "2026-11-26T23:49:38.867807Z",
+  "started_at": "2026-11-26T23:49:38.866369Z",
+  "ended_at": null,
+  "rollout_decision": null,
+  "rollout_variant": null
+}

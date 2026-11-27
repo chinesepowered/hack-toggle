@@ -32,7 +32,7 @@ echo "== pre-launch check"
 $FX check --flag booking_form | tee "$LOG/1-check.txt"
 
 echo "== start (approved by $APPROVER)"
-$FX start --flag booking_form --approved-by "$APPROVER" --log experiments/experiment-approvals.log | tee "$LOG/2-start.txt"
+$FX start --flag booking_form --approved-by "$APPROVER" --log experiments/approvals.tsv | tee "$LOG/2-start.txt"
 
 echo "== $GUESTS AI guests (log: data/logs/$RUN_ID.log)"
 npm run --silent guests -- --env production --base "$BASE" --n "$GUESTS" --seed "$SEED" --run-id "$RUN_ID" --concurrency 8 >"data/logs/$RUN_ID.log" 2>&1

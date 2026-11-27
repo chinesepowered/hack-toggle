@@ -1,0 +1,113 @@
+{
+  "guestId": "prod1_g0181",
+  "brief": {
+    "guestId": "prod1_g0181",
+    "date": "2026-11-30",
+    "preferredSlot": "10:00",
+    "expectedSlot": "10:00",
+    "guests": 2,
+    "bath": "cedar",
+    "addons": [],
+    "name": "Ivy Novak",
+    "email": "ivy.novak@example.com"
+  },
+  "task": "Book a soak at Capybara Onsen for 2 guests on Monday 30 November 2026.\nPreferred time: 10:00 AM. If that time is sold out, book the next later time that is available.\nBath: Cedar Tub.\nExtras: none.\nName: Ivy Novak. Email: ivy.novak@example.com.\nAccept the house rules, confirm the booking, and stop once you see the confirmation.",
+  "variant": "classic",
+  "outcome": "done",
+  "actions": 8,
+  "turns": 9,
+  "tokens": {
+    "prompt": 19293,
+    "completion": 707
+  },
+  "steps": [
+    {
+      "n": 1,
+      "thought": "Start the booking flow by clicking Book a soak.",
+      "action": "click",
+      "ref": "e9",
+      "target": "link \"Book a soak\" [ref=e9] [cursor=pointer]",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 2,
+      "thought": "Select Monday 30 November 2026 on the calendar.",
+      "action": "click",
+      "ref": "e55",
+      "target": "generic [ref=e55] [cursor=pointer]: \"30\"",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 3,
+      "thought": "Select the preferred 10:00 AM time.",
+      "action": "click",
+      "ref": "e59",
+      "target": "generic [ref=e59] [cursor=pointer]: 10:00 AM",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 4,
+      "thought": "Select Cedar Tub bath.",
+      "action": "click",
+      "ref": "e79",
+      "target": "generic [ref=e79] [cursor=pointer]",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 5,
+      "thought": "Fill in the full name field.",
+      "action": "fill",
+      "ref": "e103",
+      "target": "textbox [ref=e103]",
+      "text": "Ivy Novak",
+      "result": "Filled.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 6,
+      "thought": "Enter the email address.",
+      "action": "fill",
+      "ref": "e106",
+      "target": "textbox [ref=e106]",
+      "text": "ivy.novak@example.com",
+      "result": "Filled.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 7,
+      "thought": "All details look correct in the summary. Now I'll accept the house rules.",
+      "action": "click",
+      "ref": "e108",
+      "target": "generic [ref=e108] [cursor=pointer]: \"I accept the house rules: shower first, no splashing, be kind to capybaras.\"",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 8,
+      "thought": "All details are correct; now confirm the booking.",
+      "action": "click",
+      "ref": "e109",
+      "target": "generic [ref=e109] [cursor=pointer]: Confirm booking",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/confirmation/CAPY-BC376D39"
+    },
+    {
+      "n": 9,
+      "thought": "The confirmation page shows all booking details matching the task: Monday 30 November 2026 at 10:00 AM, 2 guests, Cedar Tub, no extras, Ivy Novak, ivy.novak@example.com.",
+      "action": "done",
+      "url": "http://localhost:3001/confirmation/CAPY-BC376D39"
+    }
+  ],
+  "startedAt": "2026-11-26T23:55:14.550Z",
+  "finalUrl": "http://localhost:3001/confirmation/CAPY-BC376D39",
+  "finishedAt": "2026-11-26T23:55:23.818Z",
+  "audit": {
+    "completed": true,
+    "correct": true,
+    "problems": []
+  }
+}

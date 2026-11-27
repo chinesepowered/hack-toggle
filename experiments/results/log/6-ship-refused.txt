@@ -1,0 +1,2 @@
+$ fx ship --flag booking_form --winner accessible
+fx: a guardrail is breached: Guest tokens. Ship control or keep collecting. Use --force only once the user has seen this and accepted it.

@@ -1,0 +1,54 @@
+{
+  "runId": "prod1",
+  "env": "production",
+  "model": "Qwen/Qwen3.8-27B",
+  "seed": 2026,
+  "guests": 300,
+  "neverReachedTheForm": 0,
+  "tokensLift": 0.13629525277232069,
+  "totalTokens": 10257112,
+  "versions": {
+    "classic": {
+      "guests": 156,
+      "completed": 156,
+      "correct": 156,
+      "correctRate": 1,
+      "correctRateExact95": [
+        0.9766307284086215,
+        1
+      ],
+      "actionsMean": 11.814102564102564,
+      "guestsWithExtraActions": 24,
+      "extraActionsMean": 0.3333333333333333,
+      "actionsSd": 2.0877661690212137,
+      "tokensMean": 32090.92948717949,
+      "tokensSd": 7166.934778381656,
+      "tokensMedian": 31652.5,
+      "turnsMean": 12.865384615384615,
+      "promptTokensPerTurn": 2380.9128051818634,
+      "completionTokensPerTurn": 113.44942700548081,
+      "problems": {}
+    },
+    "accessible": {
+      "guests": 144,
+      "completed": 144,
+      "correct": 144,
+      "correctRate": 1,
+      "correctRateExact95": [
+        0.9747081185124833,
+        1
+      ],
+      "actionsMean": 11.270833333333334,
+      "guestsWithExtraActions": 0,
+      "extraActionsMean": 0,
+      "actionsSd": 1.4251426134010128,
+      "tokensMean": 36464.770833333336,
+      "tokensSd": 5000.244568450448,
+      "tokensMedian": 35520.5,
+      "turnsMean": 12.270833333333334,
+      "promptTokensPerTurn": 2896.6740237691,
+      "completionTokensPerTurn": 74.98811544991511,
+      "problems": {}
+    }
+  }
+}

@@ -1,0 +1,4 @@
+experiment id=8 status=running started=2026-11-26T23:49:38.866369Z
+live: both versions are being served (9 control / 11 variation of 20 probe identities)
+recorded in experiments/experiment-approvals.log
+next: when traffic flows, fx status should show exposures on both sides. When the planned traffic has finished: fx results

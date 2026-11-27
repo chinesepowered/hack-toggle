@@ -1,0 +1,8 @@
+ok    warehouse connected
+ok    variation 'accessible' exists and has a key
+ok    event 'booking_correct' has been received here before
+ok    event 'booking_completed' has been received here before
+ok    event 'guest_steps' has been received here before
+ok    event 'guest_tokens' has been received here before
+ok    nothing has changed for users yet: 20 of 20 probe identities get the control (classic)
+ready. Starting changes what users are served: show the user experiments/booking_form.json and this output, ask, then: fx start --approved-by NAME

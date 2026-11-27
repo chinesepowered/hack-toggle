@@ -74,6 +74,17 @@ export function briefText(brief) {
   ].join('\n');
 }
 
+// The fewest clicks and fills that can complete a brief: open the form, move the
+// calendar forward, pick the day, the time and the bath, step the guest count
+// from its default of 2, tick each extra, fill in name and email, accept the
+// rules and confirm. Anything a guest does beyond this was a detour.
+export function minimumActions(brief, today) {
+  const [ty, tm] = today.split('-').map(Number);
+  const [by, bm] = brief.date.split('-').map(Number);
+  const monthsForward = (by - ty) * 12 + (bm - tm);
+  return 1 + monthsForward + 1 + 1 + Math.abs(brief.guests - 2) + 1 + brief.addons.length + 2 + 1 + 1;
+}
+
 // Compare the bookings a guest actually made with their brief.
 export function auditGuest(brief, bookings) {
   if (bookings.length === 0) return { completed: false, correct: false, problems: ['no booking'] };

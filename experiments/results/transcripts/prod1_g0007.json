@@ -1,0 +1,122 @@
+{
+  "guestId": "prod1_g0007",
+  "brief": {
+    "guestId": "prod1_g0007",
+    "date": "2026-12-20",
+    "preferredSlot": "11:30",
+    "expectedSlot": "11:30",
+    "guests": 2,
+    "bath": "yuzu",
+    "addons": [],
+    "name": "Noah Chen",
+    "email": "noah.chen@example.com"
+  },
+  "task": "Book a soak at Capybara Onsen for 2 guests on Sunday 20 December 2026.\nPreferred time: 11:30 AM. If that time is sold out, book the next later time that is available.\nBath: Yuzu Bath.\nExtras: none.\nName: Noah Chen. Email: noah.chen@example.com.\nAccept the house rules, confirm the booking, and stop once you see the confirmation.",
+  "variant": "accessible",
+  "outcome": "done",
+  "actions": 9,
+  "turns": 10,
+  "tokens": {
+    "prompt": 27855,
+    "completion": 645
+  },
+  "steps": [
+    {
+      "n": 1,
+      "thought": "Start the booking flow by clicking the Book a soak link.",
+      "action": "click",
+      "ref": "e9",
+      "target": "link \"Book a soak\" [ref=e9] [cursor=pointer]",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 2,
+      "thought": "Navigate from November 2026 to December 2026.",
+      "action": "click",
+      "ref": "e17",
+      "target": "button \"Next month\" [ref=e17] [cursor=pointer]",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 3,
+      "thought": "The calendar shows December 2026; select Sunday 20 December 2026.",
+      "action": "click",
+      "ref": "e46",
+      "target": "button \"Sunday 20 December 2026\" [ref=e46] [cursor=pointer]: \"20\"",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 4,
+      "thought": "Select the preferred time 11:30 AM.",
+      "action": "click",
+      "ref": "e62",
+      "target": "radio \"11:30 AM\" [ref=e62] [cursor=pointer]",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 5,
+      "thought": "Select the Yuzu Bath.",
+      "action": "click",
+      "ref": "e77",
+      "target": "radio \"Yuzu Bath Open-air pool with floating yuzu $28 per guest\" [ref=e77] [cursor=pointer]",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 6,
+      "thought": "Fill in the full name.",
+      "action": "fill",
+      "ref": "e105",
+      "target": "textbox \"Full name\" [ref=e105]",
+      "text": "Noah Chen",
+      "result": "Filled.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 7,
+      "thought": "Enter the guest's email address.",
+      "action": "fill",
+      "ref": "e108",
+      "target": "textbox \"Email\" [ref=e108]",
+      "text": "noah.chen@example.com",
+      "result": "Filled.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 8,
+      "thought": "Accept the house rules before confirming.",
+      "action": "click",
+      "ref": "e110",
+      "target": "'checkbox \"I accept the house rules: shower first, no splashing, be kind to capybaras.\" [ref=e110] [cursor=pointer]'",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 9,
+      "thought": "All details are set correctly; confirm the booking.",
+      "action": "click",
+      "ref": "e111",
+      "target": "button \"Confirm booking\" [ref=e111] [cursor=pointer]",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/confirmation/CAPY-06484D23"
+    },
+    {
+      "n": 10,
+      "thought": "The confirmation page shows the booking is confirmed with all correct details.",
+      "action": "done",
+      "url": "http://localhost:3001/confirmation/CAPY-06484D23"
+    }
+  ],
+  "startedAt": "2026-11-26T23:49:41.580Z",
+  "finalUrl": "http://localhost:3001/confirmation/CAPY-06484D23",
+  "finishedAt": "2026-11-26T23:49:53.367Z",
+  "audit": {
+    "completed": true,
+    "correct": true,
+    "problems": []
+  }
+}

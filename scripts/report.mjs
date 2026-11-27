@@ -17,6 +17,7 @@ import { execFileSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { chromium } from 'playwright';
+import { minimumActions } from '../guests/briefs.mjs';
 import { ROOT, flagsmithState, parseArgs } from './env.mjs';
 
 const args = parseArgs();
@@ -34,6 +35,7 @@ const guests = readdirSync(runDir)
   .sort()
   .map((f) => JSON.parse(readFileSync(join(runDir, f), 'utf8')));
 
+const runSummary = existsSync(join(runDir, 'summary.json')) ? JSON.parse(readFileSync(join(runDir, 'summary.json'), 'utf8')) : {};
 const csvCell = (v) => (/[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v));
 const rows = guests.map((g) => ({
   guest: g.guestId,
@@ -42,6 +44,8 @@ const rows = guests.map((g) => ({
   completed: g.audit?.completed ? 1 : 0,
   correct: g.audit?.correct ? 1 : 0,
   actions: g.actions,
+  // Actions beyond the fewest that could have completed this guest's brief.
+  extra_actions: g.actions - minimumActions(g.brief, runSummary.today),
   turns: g.turns,
   prompt_tokens: g.tokens.prompt,
   completion_tokens: g.tokens.completion,
@@ -100,6 +104,8 @@ for (const version of ['classic', 'accessible']) {
     correctRate: correct / g.length,
     correctRateExact95: exactInterval(correct, g.length),
     actionsMean: mean(g.map((r) => r.actions)),
+    guestsWithExtraActions: g.filter((r) => r.extra_actions > 0).length,
+    extraActionsMean: mean(g.map((r) => r.extra_actions)),
     actionsSd: sd(g.map((r) => r.actions)),
     tokensMean: mean(g.map((r) => r.tokens)),
     tokensSd: sd(g.map((r) => r.tokens)),
@@ -111,7 +117,6 @@ for (const version of ['classic', 'accessible']) {
   };
 }
 const neverReached = rows.filter((r) => !r.version).length;
-const runSummary = existsSync(join(runDir, 'summary.json')) ? JSON.parse(readFileSync(join(runDir, 'summary.json'), 'utf8')) : {};
 const summary = {
   runId,
   env: envName,
@@ -232,7 +237,7 @@ const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>
   <div class="sub">${summary.guests} AI guests (${esc(summary.model ?? '')}), ${envName}, Flagsmith experiment ${experimentId}. Figures from the run log; Flagsmith's verdicts are in the table below the figure.</div>
   <div class="tiles">
     ${tile('Correct bookings', pair(`${c.correct}/${c.guests}`, `${a.correct}/${a.guests}`), `${pct(c.correctRate)} and ${pct(a.correctRate)}. Exact 95% lower bounds: <b>${pct(c.correctRateExact95[0])}</b> and <b>${pct(a.correctRateExact95[0])}</b>.`)}
-    ${tile('Actions per guest', pair(fmt(c.actionsMean, 1), fmt(a.actionsMean, 1)), `Clicks and fills, mean. Standard deviations ${fmt(c.actionsSd, 1)} and ${fmt(a.actionsSd, 1)}.`)}
+    ${tile('Actions per guest', pair(fmt(c.actionsMean, 1), fmt(a.actionsMean, 1)), `Clicks and fills, mean. <b>${c.guestsWithExtraActions} of ${c.guests}</b> classic guests took a detour; <b>${a.guestsWithExtraActions} of ${a.guests}</b> accessible guests did.`)}
     ${tile('Tokens per guest', pair(fmt(c.tokensMean), fmt(a.tokensMean)), `Mean, prompt plus completion. Accessible is <b>${pct(Math.abs(summary.tokensLift), 0)} ${summary.tokensLift >= 0 ? 'higher' : 'lower'}</b>: ${fmt(a.promptTokensPerTurn)} against ${fmt(c.promptTokensPerTurn)} prompt tokens per turn.`)}
   </div>
   <h2>Tokens used per guest</h2>

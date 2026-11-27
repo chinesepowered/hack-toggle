@@ -56,6 +56,6 @@ Before the first command, run `flagsmith config`. It must show a project and an 
 - **Sandboxes.** If the environment key is listed in `FX_UNATTENDED_ENVS`, a person has marked it as a sandbox: omit `--approved-by` and `fx` records the action as unattended. Never use `--force` there. If results are still arriving, wait; once the planned traffic is in and `ship` refuses, run `fx stop` and report.
 - **Stop is always allowed.** If anything looks wrong after the start, run `fx stop --flag <flag>`. It ends the experiment and puts everyone back on the control. Tell the user at once.
 - **Secrets.** Never print or commit API keys, tokens or server-side SDK keys. The client-side environment key is public and appears in the log.
-- **Record.** Starts, ships, refused ships and stops are appended to `./experiment-approvals.log` (change it with `--log FILE`). Commit it with the spec.
+- **Record.** Starts, ships, refused ships and stops are appended to `experiments/approvals.tsv`, next to the spec (change it with `--log FILE`). Commit it with the spec.
 
 `fx --help` lists every option. Why each step exists and what Flagsmith does underneath: [references/how-it-works.md](references/how-it-works.md). Read it only when a step fails in a way the output does not explain.

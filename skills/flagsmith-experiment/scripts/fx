@@ -48,7 +48,7 @@ Options:
                            Omit it only in an environment listed in FX_UNATTENDED_ENVS
                            (space-separated environment keys a person has marked as sandboxes).
   start, ship, stop:
-      --log FILE           append the action to this file (default ./experiment-approvals.log)
+      --log FILE           append the action to this file (default experiments/approvals.tsv)
   ship:
       --winner control|KEY which variation everyone gets from now on
       --force              ship even if the primary metric is not conclusive
@@ -62,7 +62,7 @@ CMD=$1
 shift
 ENVK=${FLAGSMITH_ENVIRONMENT:-}
 FLAG="" SPEC="" CONTROL="" VARIANT="" SPLIT=50 ROLLOUT=100 NAME="" HYPOTHESIS="" APPROVER="" WINNER="" FORCE=0
-LOG=./experiment-approvals.log
+LOG=experiments/approvals.tsv
 METRICS=()
 while [ $# -gt 0 ]; do
   case $1 in
@@ -144,7 +144,10 @@ require_approval() {
   [ -n "$APPROVER" ] || die "this changes what real users are served. Stop, show the user the output of 'fx $1', and ask them to approve. Then re-run with --approved-by '<their name>'."
 }
 
+# The record is a .tsv on purpose: most .gitignore files exclude *.log, and
+# this file is meant to be committed.
 record() {
+  mkdir -p "$(dirname "$LOG")"
   printf '%s\t%s\tenv=%s\tflag=%s\texperiment=%s\tby=%s\t%s\n' \
     "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$1" "$ENVK" "$FLAG" "$XID" "${APPROVER:-n/a}" "${2:-}" >>"$LOG"
   echo "recorded in $LOG"
