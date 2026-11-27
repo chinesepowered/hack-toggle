@@ -70,7 +70,7 @@ pre{margin:0;font-family:'DejaVu Sans Mono',ui-monospace,Menlo,monospace}
 .term .win{color:#8ad6a4;font-weight:700}.term .warn{color:#f6b93b;font-weight:700}.term .dim{color:#a8998a}
 .term{white-space:pre-wrap;overflow-wrap:anywhere}
 .quote{margin-top:26px;padding:24px 30px;background:#fffdf8;border:2px solid #e7d9c4;border-radius:24px;font-size:30px;line-height:1.35;display:flex;gap:22px;align-items:center}
-.quote .chip{flex:none}
+.quote .chip{flex:none}.quote code{font-family:'DejaVu Sans Mono',ui-monospace,monospace;font-size:25px;white-space:pre-wrap}
 table.verdict{width:100%;border-collapse:separate;border-spacing:0 14px;font-size:30px;white-space:nowrap}
 table.verdict thead th{font-size:23px;font-weight:600;color:#7a6555;text-align:left;padding:0 22px}
 table.verdict tbody tr{background:#fffdf8}
@@ -209,7 +209,7 @@ const TEMPLATES = {
     page(`<div class="pad"><h2>${esc(heading)}</h2><div class="stat">${items
       .map((i) => `<div><div class="k">${esc(i.label)}</div><div class="v" style="color:${i.colour || '#3a2a1f'}">${esc(i.value)}</div><div class="n">${esc(i.note || '')}</div></div>`)
       .join('')}</div>${quotes
-      .map((q) => `<div class="quote"><span class="chip ${q.tone || ''}">${esc(q.who)}</span><span>&ldquo;${esc(q.text)}&rdquo;</span></div>`)
+      .map((q) => `<div class="quote"><span class="chip ${q.tone || ''}">${esc(q.who)}</span>${q.code ? `<code>${esc(q.code)}</code>` : `<span>&ldquo;${esc(q.text)}&rdquo;</span>`}</div>`)
       .join('')}${banner ? `<div class="banner" style="margin:auto 0 30px">${banner}</div>` : ''}</div>`),
 
   guestFrame: ({ image, box, who, tone, thought, saw, sawTone }) =>

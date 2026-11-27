@@ -46,9 +46,9 @@ We started out expecting the accessible form to raise correct bookings. Two pilo
 - **Events.** The exposure is recorded when the site reads the flag with `getExperimentFlag`. The site sends `booking_completed` when it stores a booking. Afterwards the harness compares stored bookings with each brief and sends `booking_correct`, `guest_steps` and `guest_tokens`.
 - **Correct** means exactly one booking, matching the brief on every field: day, time (the preferred one, or the next later one if it is sold out), guests, bath, extras, name and email.
 
-| A guest on the classic form | A guest on the accessible form |
-|---|---|
-| ![An AI guest clicking an unnamed element](docs/guest-classic.png) | ![An AI guest clicking a named button](docs/guest-accessible.png) |
+![Two AI guests with the same brief: on the classic form one clicks sold-out times again and again, on the accessible form the other goes straight to a free one](docs/guest-detour.gif)
+
+Two guests with the same brief, filmed for the video with one identity pinned to each version. The bar at the top is the guest's own note for the step, and on the right is the line of the page it chose to act on. Their preferred time, 1:00 PM, is sold out, and so are the next two. These two recordings are not part of the experiment's data.
 
 ## Results
 
@@ -171,7 +171,7 @@ Two checks need no Flagsmith and no API key. `npm test` runs the unit tests for 
 
 **Track 4, Flagsmith Agent Skills.** [skills/flagsmith-experiment](skills/flagsmith-experiment/SKILL.md) takes an agent through the whole job on the Flagsmith CLI: plan, check, human-approved start, results with a verdict, rollout.
 - *Completes the whole job.* Twice, a fresh agent given only the skill and the location of the app ran the experiment end to end in Staging. Both times the token guardrail was breached. In the second test the agent tried to ship the variation, `fx` refused, and the agent stopped the experiment instead.
-- *Token efficiency.* `SKILL.md` is about 1,600 tokens and `fx` prints one fact per line. The first test took 26 tool calls and 117,084 tokens. After we rewrote the instructions from that agent's feedback, the second took 15 tool calls and 104,707 tokens, including the extra ship attempt. These are the agent harness's totals, which count the agent's own system prompt on every turn and its written report.
+- *Token efficiency.* `SKILL.md` is about 1,600 tokens and `fx` prints one fact per line. Across the whole production job (set-up, check, start, status, results, the refused ship and the ship) `fx` printed about 2,500 characters, roughly 600 tokens; those outputs are in [experiments/results/log](experiments/results/log). In the two tests with a fresh agent, the first took 26 tool calls and 117,084 tokens. After we rewrote the instructions from that agent's feedback, the second took 15 tool calls and 104,707 tokens, including the extra ship attempt. Those two are the agent harness's totals, which count the agent's own system prompt on every turn, its reading of the app, and its written report.
 - *Creative use of the CLI.* `flagsmith evaluate --identity` on throwaway identities proves that nothing is live before a start and that the rollout is live after it. The warehouse's list of received event names catches a misspelt event before it costs a day. `--jq` keeps every call to the few fields needed.
 - *Safety.* Experiments are created and started in one approved step, because a created experiment already serves its variation. Stop is always allowed. Ship refuses an inconclusive primary metric, a breached guardrail or a broken split.
 

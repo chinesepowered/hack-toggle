@@ -359,6 +359,47 @@
       }
     },
     {
+      "id": "skill",
+      "say": "The skill is small on purpose. Its instructions are about sixteen hundred tokens, and its commands print one fact per line. A fresh agent, given only the skill and the app, ran the whole job in fifteen tool calls.",
+      "visual": {
+        "type": "card",
+        "template": "stats",
+        "data": {
+          "heading": "The skill, measured",
+          "items": [
+            {
+              "label": "Tokens of instructions",
+              "value": "~1,600",
+              "note": "SKILL.md, loaded once"
+            },
+            {
+              "label": "Tokens of output, whole job",
+              "value": "~600",
+              "note": "about 2,500 characters across seven commands in the production run"
+            },
+            {
+              "label": "Tool calls, fresh agent, whole job",
+              "value": "15",
+              "note": "104,707 tokens in total, counting the agent’s own prompt, its reading of the app and its report"
+            }
+          ],
+          "banner": "Set up. Check. Start, when a person approves. Read. Ship, when a person approves.",
+          "quotes": [
+            {
+              "who": "one fact per line",
+              "tone": "teal",
+              "code": "ok    event 'booking_correct' has been received here before"
+            },
+            {
+              "who": "and the next step",
+              "tone": "orange",
+              "code": "next: when traffic flows, fx status should show exposures on both sides."
+            }
+          ]
+        }
+      }
+    },
+    {
       "id": "rerun",
       "say": "And you can check it yourself. On a fresh clone, one command starts open-source Flagsmith, the booking site, and a hundred and twenty new guests. Seven minutes later, it gives the same answer.",
       "visual": {
