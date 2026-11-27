@@ -13,7 +13,7 @@ data/
 .flagsmith/
 *.log
 
-# Video build intermediates (the final cut is delivered separately)
+# Video build intermediates (the final cut is copied to docs/)
 video/build/
 video/out/
 

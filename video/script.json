@@ -8,7 +8,39 @@
         "shots": [
           {
             "url": "http://localhost:3001/",
-            "settle": 1200
+            "settle": 1200,
+            "weight": 1.1
+          },
+          {
+            "url": "http://localhost:3001/preview/accessible",
+            "do": [
+              [
+                "click",
+                "[data-k=\"cal-next\"]"
+              ],
+              [
+                "click",
+                "[data-k=\"day-2026-12-12\"]"
+              ],
+              [
+                "click",
+                ".slot:not(.is-off)"
+              ],
+              [
+                "click",
+                "[data-k=\"guests-plus\"]"
+              ],
+              [
+                "click",
+                "[data-k=\"bath-cedar\"]"
+              ],
+              [
+                "scroll",
+                "0"
+              ]
+            ],
+            "settle": 800,
+            "weight": 1
           }
         ]
       }
@@ -115,9 +147,26 @@
       "say": "Both versions sit behind one Flagsmith feature flag, on a Flagsmith instance we host ourselves. A Flagsmith experiment splits the guests fifty-fifty and watches four metrics: correct bookings, completed bookings, steps, and tokens.",
       "visual": {
         "type": "card",
-        "template": "picture",
+        "template": "crops",
         "data": {
-          "image": "docs/flagsmith-experiment.png"
+          "heading": "One flag. One experiment. Four metrics.",
+          "image": "docs/flagsmith-experiment.png",
+          "crops": [
+            [
+              432,
+              166,
+              1464,
+              256
+            ],
+            [
+              432,
+              600,
+              1464,
+              272
+            ]
+          ],
+          "spec": "experiments/booking_form.json",
+          "width": 1640
         }
       }
     },
@@ -160,24 +209,42 @@
       "id": "check",
       "say": "The experiment itself is run by a coding agent, using a skill we built on the Flagsmith command line. Before anything goes live, it checks that every event really arrives, and that every user still gets the control. Then it stops, and waits for a person to approve the start.",
       "visual": {
-        "type": "card",
-        "template": "terminal",
-        "data": {
-          "heading": "An agent runs it. A person approves it.",
-          "small": true,
-          "parts": [
-            {
-              "cmd": "fx check --flag booking_form",
-              "file": "experiments/results/log/1-check.txt",
-              "to": 7
-            },
-            {
-              "cmd": "fx start --flag booking_form --approved-by \"Nelson\"",
-              "file": "experiments/results/log/2-start.txt",
-              "to": 2
+        "type": "cards",
+        "cards": [
+          {
+            "weight": 212,
+            "template": "terminal",
+            "data": {
+              "heading": "An agent runs it. A person approves it.",
+              "parts": [
+                {
+                  "cmd": "fx check --flag booking_form",
+                  "file": "experiments/results/log/1-check.txt",
+                  "to": 7
+                }
+              ]
             }
-          ]
-        }
+          },
+          {
+            "weight": 80,
+            "template": "terminal",
+            "data": {
+              "heading": "An agent runs it. A person approves it.",
+              "parts": [
+                {
+                  "cmd": "fx check --flag booking_form",
+                  "file": "experiments/results/log/1-check.txt",
+                  "to": 8
+                },
+                {
+                  "cmd": "fx start --flag booking_form --approved-by \"Nelson\"",
+                  "file": "experiments/results/log/2-start.txt",
+                  "to": 2
+                }
+              ]
+            }
+          }
+        ]
       }
     },
     {
@@ -239,7 +306,8 @@
               "tone": "teal",
               "text": "4:00 PM is sold out, so I need to book the next later available time, which is 5:30 PM."
             }
-          ]
+          ],
+          "banner": "A detour costs a few guests a few steps.<br>A longer page costs every guest, on every step."
         }
       }
     },
@@ -247,28 +315,72 @@
       "id": "decision",
       "say": "So when the agent tries to ship, the skill refuses. A breached guardrail needs a person. A person was shown the result and accepted the cost: the upgrade is for people, and agents book just as well. Flagsmith rolled it out to everyone.",
       "visual": {
+        "type": "cards",
+        "cards": [
+          {
+            "weight": 87,
+            "template": "terminal",
+            "data": {
+              "heading": "The skill refuses. A person decides.",
+              "parts": [
+                {
+                  "cmd": "fx ship --flag booking_form --winner accessible",
+                  "file": "experiments/results/log/6-ship-refused.txt"
+                }
+              ]
+            }
+          },
+          {
+            "weight": 108,
+            "template": "terminal",
+            "data": {
+              "heading": "The skill refuses. A person decides.",
+              "parts": [
+                {
+                  "cmd": "fx ship --flag booking_form --winner accessible",
+                  "file": "experiments/results/log/6-ship-refused.txt"
+                },
+                {
+                  "cmd": "fx ship --flag booking_form --winner accessible --approved-by \"Nelson\" --force",
+                  "file": "experiments/results/log/7-ship.txt",
+                  "to": 4
+                }
+              ]
+            }
+          },
+          {
+            "weight": 52,
+            "template": "picture",
+            "data": {
+              "image": "docs/flagsmith-shipped.png"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "rerun",
+      "say": "And you can check it yourself. On a fresh clone, one command starts open-source Flagsmith, the booking site, and a hundred and twenty new guests. Seven minutes later, it gives the same answer.",
+      "visual": {
         "type": "card",
         "template": "terminal",
         "data": {
-          "heading": "The skill refuses. A person decides.",
-          "small": true,
+          "heading": "One command reruns the whole experiment",
+          "size": 20,
           "parts": [
             {
-              "cmd": "fx ship --flag booking_form --winner accessible",
-              "file": "experiments/results/log/6-ship-refused.txt"
-            },
-            {
-              "cmd": "fx ship --flag booking_form --winner accessible --approved-by \"Nelson\" --force",
-              "file": "experiments/results/log/7-ship.txt",
-              "to": 4
+              "cmd": "./scripts/demo.sh",
+              "file": "docs/demo-run.txt",
+              "match": "^==> |  control |^sample ratio"
             }
-          ]
+          ],
+          "foot": "Shown: the step and result lines of a run from a fresh clone, on a new Flagsmith instance, in 7 min 34 s. Full output: docs/demo-run.txt"
         }
       }
     },
     {
       "id": "close",
-      "say": "One experiment, an answer we did not expect, and a result nobody scripted. It all runs on open-source Flagsmith, and you can rerun every step with one command.",
+      "say": "One experiment, an answer we did not expect, and a result nobody scripted.",
       "hold": 1.2,
       "visual": {
         "type": "card",

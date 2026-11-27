@@ -10,6 +10,8 @@ A Flagsmith experiment splits AI guests between the two versions and counts corr
 
 > **Result, from 300 AI guests.** Every guest made a correct booking on both versions: 156 of 156 on classic, 144 of 144 on accessible. On the classic form 24 guests took a detour first, mostly clicking a sold-out time again and again because nothing marked it as sold out. On the accessible form none did. But the accessible form cost 13.6% more tokens per guest, which breached a guardrail, so the tooling refused to ship it until a person accepted that cost. A person did, and it shipped. Details under [Results](#results).
 
+**Demo video, 3 minutes:** [docs/capybara-onsen-demo.mp4](docs/capybara-onsen-demo.mp4), with captions in [docs/capybara-onsen-demo.srt](docs/capybara-onsen-demo.srt).
+
 Built for [Toggle Wars: The Flagsmith Experimentation Hackathon](https://www.wemakedevs.org/hackathons/flagsmith). One project, entered in all four tracks; see [The four tracks](#the-four-tracks).
 
 ## Two versions that look the same
@@ -104,6 +106,8 @@ These were used to debug the harness and size the experiment. They are not the r
 | Skill test 1 | 120 | 63 of 63 | 57 of 57 | 11.8 and 12.0 | 31,902 and 38,954 (+22%) |
 | Skill test 2 | 120 | 55 of 55 | 65 of 65 | 12.2 and 11.8 | 32,915 and 38,215 (+16%) |
 
+After the experiment, the one-command demo below was run once from a fresh clone, on a new Flagsmith instance, with 120 new guests. It gave the same pattern again: 61 of 61 and 59 of 59 correct bookings, and 18.1% more tokens per guest on the accessible form, with the token guardrail breached. Its output is in [docs/demo-run.txt](docs/demo-run.txt).
+
 The two skill tests were run end to end by a fresh agent using only the skill (see [The four tracks](#the-four-tracks)). An earlier pilot of 80 guests found two problems in our own set-up, both fixed before these runs: the guests were shown Playwright's raw element references, whose format changes between pages, and several accessible controls carried an `aria-label` that only repeated their visible text.
 
 ## How Flagsmith is used
@@ -130,7 +134,7 @@ cp .env.example .env    # then fill in OPENAI_BASE_URL, OPENAI_API_KEY and OPENA
 ./scripts/demo.sh
 ```
 
-That one command starts Flagsmith, creates the admin account, project and environments, starts the booking site, sets the experiment up, rehearses it, runs the pre-launch check, starts it in Staging, sends 120 AI guests through it, and prints Flagsmith's results. It takes about 15 minutes, most of it the guests. It never ships; you decide:
+That one command starts Flagsmith, creates the admin account, project and environments, starts the booking site, sets the experiment up, rehearses it, runs the pre-launch check, starts it in Staging, sends 120 AI guests through it, and prints Flagsmith's results. From a fresh clone, with the Docker images already downloaded, it took 7 minutes 34 seconds, most of it the guests; [docs/demo-run.txt](docs/demo-run.txt) is the output of that run, with the clone's own path shortened to `.` in one line. It never ships; you decide:
 
 ```bash
 skills/flagsmith-experiment/scripts/fx ship --flag booking_form --winner accessible --approved-by "Your name"
@@ -142,6 +146,8 @@ skills/flagsmith-experiment/scripts/fx stop --flag booking_form
 
 The dashboard is at http://localhost:8000 (the login is in `.flagsmith/state.json`). The site is at http://localhost:3000; `/preview/classic` and `/preview/accessible` show each version without enrolling you.
 
+Two checks need no Flagsmith and no API key. `npm test` runs the unit tests for the booking rules and for the audit that decides whether a guest's booking was correct, which is the experiment's primary metric. `npm run parity`, with the site running, compares the two versions pixel by pixel.
+
 ## What is in the repo
 
 | Path | What it is |
@@ -151,8 +157,9 @@ The dashboard is at http://localhost:8000 (the login is in `.flagsmith/state.jso
 | `experiments/` | The experiment spec, the pre-registration, and results. |
 | `skills/flagsmith-experiment/` | The Agent Skill: `SKILL.md`, the `fx` script, and a reference. |
 | `scripts/` | Instance bootstrap, the one-command demo, the parity check, the report generator. |
+| `test/` | Unit tests for the booking rules and the audit. |
 | `video/` | The demo video's script and the pipeline that builds it. |
-| `docs/` | Images, and [notes for the Flagsmith team](docs/flagsmith-feedback.md). |
+| `docs/` | The demo video, images, the output of a demo run, and [notes for the Flagsmith team](docs/flagsmith-feedback.md). |
 
 ## The four tracks
 
@@ -160,7 +167,7 @@ The dashboard is at http://localhost:8000 (the login is in `.flagsmith/state.jso
 
 **Track 2, AI Agents and Feature Flags.** The whole experiment is run by a coding agent through the Flagsmith CLI. It acts alone where nothing changes for users (set-up, checks, reading results) and in an environment a person has marked as a sandbox. It stops for a named person before it starts an experiment and before it ships one, and it will not ship over a breached guardrail on its own. Every start, ship and stop is appended to an approvals log.
 
-**Track 3, Build on Open Source Flagsmith.** Everything runs on self-hosted Flagsmith from one command. Three pieces are meant to be reused: `scripts/bootstrap.mjs` sets up a fresh instance without touching the dashboard, `guests/guest.mjs` drives an AI guest through any site given a URL and a task in plain language (the briefs and the audit here are specific to the onsen), and `fx` runs any two-version experiment.
+**Track 3, Build on Open Source Flagsmith.** Everything runs on self-hosted Flagsmith from one command, which we checked from a fresh clone. Three pieces are meant to be reused: `scripts/bootstrap.mjs` sets up a fresh instance without touching the dashboard, `guests/guest.mjs` drives an AI guest through any site given a URL and a task in plain language (the briefs and the audit here are specific to the onsen), and `fx` runs any two-version experiment.
 
 **Track 4, Flagsmith Agent Skills.** [skills/flagsmith-experiment](skills/flagsmith-experiment/SKILL.md) takes an agent through the whole job on the Flagsmith CLI: plan, check, human-approved start, results with a verdict, rollout.
 - *Completes the whole job.* Twice, a fresh agent given only the skill and the location of the app ran the experiment end to end in Staging. Both times the token guardrail was breached. In the second test the agent tried to ship the variation, `fx` refused, and the agent stopped the experiment instead.

@@ -11,7 +11,7 @@
 //   node video/build.mjs --only hook,why # re-render some scenes, then re-assemble
 //   node video/build.mjs --frames        # render frames only (no audio, no ffmpeg)
 
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -90,6 +90,13 @@ table.verdict small{display:block;font-size:21px;font-weight:600;color:#7a6555}
 .stat>div{flex:1;background:#fffdf8;border:2px solid #e7d9c4;border-radius:28px;padding:30px 36px}
 .stat .k{font-size:28px;color:#7a6555;font-weight:600}.stat .v{font-size:76px;font-weight:800;letter-spacing:-.02em;line-height:1.1;margin-top:6px}
 .stat .n{font-size:26px;color:#7a6555;margin-top:6px}
+.crop{flex:none;overflow:hidden;background:#fff;border:2px solid #e7d9c4;border-radius:22px;box-shadow:0 10px 40px rgba(58,42,31,.10)}
+.crop+.crop{margin-top:22px}.crop img{display:block;max-width:none}
+.tiles{display:flex;gap:22px;margin-top:22px}
+.tiles>div{flex:1;background:#fffdf8;border:2px solid #e7d9c4;border-radius:20px;padding:12px 22px}
+.tiles b{display:block;font-size:28px}.tiles span{font-size:23px;color:#7a6555}
+.term .note{color:#fff;font-weight:700}
+.foot{margin-top:18px;font-size:25px;color:#7a6555}
 `;
 
 const page = (body) => `<!doctype html><html lang="en"><head><meta charset="utf-8"><style>${CSS}</style></head><body>${body}</body></html>`;
@@ -101,11 +108,13 @@ function colourTerminal(line) {
   if (/^\$ /.test(line)) return `<span class="cmd">${e}</span>`;
   if (/^ok /.test(line)) return `<span class="ok">ok</span>${e.slice(2)}`;
   if (/^FAIL /.test(line)) return `<span class="fail">${e}</span>`;
+  if (/^==> /.test(line)) return `<span class="note">${e}</span>`;
   return e
     .replace(/(WINNING|guardrail ok|sample ratio: ok)/g, '<span class="win">$1</span>')
     .replace(/(GUARDRAIL BREACHED|LOSING|MISMATCH)/g, '<span class="fail">$1</span>')
     .replace(/(inconclusive|collecting data)/g, '<span class="warn">$1</span>')
     .replace(/^(fx: .*)$/, '<span class="fail">$1</span>')
+    .replace(/^(ready\. .*)$/, '<span class="note">$1</span>')
     .replace(/^(recorded in .*|as of .*|note: .*)$/, '<span class="dim">$1</span>');
 }
 
@@ -132,18 +141,41 @@ const TEMPLATES = {
       </div>${banner ? `<div class="banner">${banner}</div>` : ''}</div>`),
 
   // A terminal session. Each part is a command line followed by the real output
-  // it produced, read from a saved file (optionally only lines `from`..`to`).
-  terminal: ({ heading, parts, small }) => {
+  // it produced, read from a saved file: optionally only the lines matching the
+  // regular expression `match`, and of those only lines `from`..`to`. `foot` is
+  // a note under the terminal, used to say when the output is abridged.
+  terminal: ({ heading, parts, size = 27, foot }) => {
     const all = parts.flatMap((p, i) => [
       ...(i ? [''] : []),
       `$ ${p.cmd}`,
-      ...text(p.file).split('\n').filter((l) => l.trim() && !l.startsWith('$ ')).slice(p.from ?? 0, p.to),
+      ...text(p.file)
+        .split('\n')
+        .filter((l) => l.trim() && !l.startsWith('$ ') && (!p.match || new RegExp(p.match).test(l)))
+        .slice(p.from ?? 0, p.to),
     ]);
-    return page(`<div class="pad"><h2>${esc(heading)}</h2><pre class="term"${small ? ' style="font-size:23px"' : ''}>${all.map(colourTerminal).join('\n')}</pre></div>`);
+    return page(`<div class="pad"><h2>${esc(heading)}</h2><pre class="term" style="font-size:${size}px">${all.map(colourTerminal).join('\n')}</pre>${
+      foot ? `<div class="foot">${esc(foot)}</div>` : ''
+    }</div>`);
   },
 
   // A full-frame picture, such as a saved screenshot of the Flagsmith dashboard.
   picture: ({ image }) => page(`<div class="shot"><img src="${fileUrl(image)}"></div>`),
+
+  // Parts of a saved screenshot, enlarged so that a busy page can be read at video size.
+  // Each crop is [x, y, width, height] in the picture's own pixels; nothing inside a crop is changed.
+  // `spec` adds one tile per metric of an experiment spec file.
+  crops: ({ heading, image, imageWidth = W, crops, spec, width = W - 180 }) => {
+    const scale = (width - 4) / Math.max(...crops.map((c) => c[2]));
+    const px = (n) => `${(n * scale).toFixed(1)}px`;
+    const metrics = spec ? JSON.parse(text(spec)).metrics : [];
+    return page(`<div class="pad"><h2>${esc(heading)}</h2><div style="width:${width}px">${crops
+      .map(([x, y, w, h]) => `<div class="crop" style="width:${px(w)};height:${px(h)}"><img src="${fileUrl(image)}" style="width:${px(imageWidth)};margin:-${px(y)} 0 0 -${px(x)}"></div>`)
+      .join('')}${
+      metrics.length
+        ? `<div class="tiles">${metrics.map((m, i) => `<div><b>${esc(m.name)}</b><span>${i ? '' : 'primary · '}should ${esc(m.expected.replace('_', ' '))}</span></div>`).join('')}</div>`
+        : ''
+    }</div></div>`);
+  },
 
   // The output of `fx results`, laid out as a table so it can be read at video size.
   // Every cell is taken from the real output file; nothing is recomputed here.
@@ -178,7 +210,7 @@ const TEMPLATES = {
       .map((i) => `<div><div class="k">${esc(i.label)}</div><div class="v" style="color:${i.colour || '#3a2a1f'}">${esc(i.value)}</div><div class="n">${esc(i.note || '')}</div></div>`)
       .join('')}</div>${quotes
       .map((q) => `<div class="quote"><span class="chip ${q.tone || ''}">${esc(q.who)}</span><span>&ldquo;${esc(q.text)}&rdquo;</span></div>`)
-      .join('')}${banner ? `<div class="banner" style="margin-top:auto">${banner}</div>` : ''}</div>`),
+      .join('')}${banner ? `<div class="banner" style="margin:auto 0 30px">${banner}</div>` : ''}</div>`),
 
   guestFrame: ({ image, box, who, tone, thought, saw, sawTone }) =>
     page(`<div class="shot"><img src="${fileUrl(image)}">${
@@ -314,6 +346,22 @@ for (const [i, scene] of script.scenes.entries()) {
 
 // ---- assembly ---------------------------------------------------------------
 
+// A sentence too long for one caption line is split at the comma or colon nearest its middle.
+const MAX_CAPTION = 84;
+function splitCaption(s) {
+  if (s.length <= MAX_CAPTION) return [s];
+  const cuts = [...s.matchAll(/[,:;] /g)].map((m) => m.index + 1).filter((i) => i >= 20 && s.length - i >= 20);
+  if (!cuts.length) return [s];
+  const cut = cuts.reduce((best, i) => (Math.abs(i - s.length / 2) < Math.abs(best - s.length / 2) ? i : best));
+  return [...splitCaption(s.slice(0, cut).trim()), ...splitCaption(s.slice(cut).trim())];
+}
+const captionChunks = (say) =>
+  say
+    .match(/[^.!?]+[.!?]+|[^.!?]+$/g)
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .flatMap(splitCaption);
+
 const ffmpeg = (argv) => execFileSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', ...argv], { stdio: ['ignore', 'inherit', 'inherit'] });
 
 let clock = 0;
@@ -341,8 +389,8 @@ for (const scene of script.scenes) {
   ]);
   segments.push(segment);
 
-  // Captions: split the line into short chunks, timed by their share of the characters.
-  const chunks = scene.say.match(/[^.!?]+[.!?]+|[^.!?]+$/g).map((s) => s.trim()).filter(Boolean);
+  // Captions: one sentence at a time, timed by its share of the characters.
+  const chunks = captionChunks(scene.say);
   const chars = chunks.reduce((s, c) => s + c.length, 0);
   let t = clock + LEAD;
   for (const chunk of chunks) {
@@ -366,11 +414,19 @@ writeFileSync(joinList, segments.map((s) => `file '${s}'`).join('\n') + '\n');
 const joined = join(BUILD, 'joined.mp4');
 ffmpeg(['-f', 'concat', '-safe', '0', '-i', joinList, '-c', 'copy', joined]);
 
+// The narration comes out quiet. Bring the whole track to -16 LUFS, a usual level
+// for online video: measure it first, then apply the measured correction.
+const LOUDNESS = 'loudnorm=I=-16:TP=-1.5:LRA=11';
+const probe = spawnSync('ffmpeg', ['-hide_banner', '-i', joined, '-af', `${LOUDNESS}:print_format=json`, '-vn', '-f', 'null', '-'], { encoding: 'utf8' });
+const heard = JSON.parse(probe.stderr.slice(probe.stderr.lastIndexOf('{')));
+const loudness = `${LOUDNESS}:measured_I=${heard.input_i}:measured_TP=${heard.input_tp}:measured_LRA=${heard.input_lra}:measured_thresh=${heard.input_thresh}:offset=${heard.target_offset}`;
+
 const final = join(OUT, 'capybara-onsen.mp4');
 ffmpeg([
   '-i', joined,
   '-vf', `subtitles=${srt}:force_style='FontName=Inter,FontSize=11,PrimaryColour=&H00FFFFFF,OutlineColour=&H00141A24,BorderStyle=3,Outline=3,Shadow=0,MarginV=26,Alignment=2'`,
-  '-c:v', 'libx264', '-preset', 'medium', '-crf', '19', '-c:a', 'copy', '-movflags', '+faststart',
+  '-af', loudness,
+  '-c:v', 'libx264', '-preset', 'medium', '-crf', '19', '-c:a', 'aac', '-b:a', '192k', '-ar', '44100', '-movflags', '+faststart',
   final,
 ]);
 writeFileSync(manifestFile, JSON.stringify(manifest, null, 2));

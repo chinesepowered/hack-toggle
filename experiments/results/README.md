@@ -81,7 +81,7 @@ The detour counts, their classification and the token breakdown are exploratory.
 
 | File | What it is |
 |---|---|
-| `log/` | The output of every command in the run, in order, including the refused ship attempt. |
+| `log/` | The output of every command in the run, in order, including the refused ship attempt. `2-start.txt` names the record `experiment-approvals.log`: that was the file's name when the experiment started. It was renamed to `approvals.tsv` before the ship, with its one line unchanged, because the repository ignores `*.log` files. |
 | `guests.csv` | One row per guest: version, outcome, actions, extra actions, turns, tokens. |
 | `summary.json` | Per-version totals, means and exact bounds. |
 | `flagsmith-experiment.json`, `flagsmith-results.json` | The experiment and its results as Flagsmith's API returned them. |

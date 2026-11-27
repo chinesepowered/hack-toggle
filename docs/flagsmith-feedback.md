@@ -51,7 +51,7 @@ The experiment page's analysis showed the primary metric. We could not find the 
 
 ## What worked well
 
-- A complete self-hosted instance with Experimentation is three containers and about a minute, and the Flagsmith database option means there is nothing else to run for a trial.
+- A complete self-hosted instance with Experimentation is three containers. From an empty database it was ready in about a minute and a half, and the Flagsmith database option means there is nothing else to run for a trial.
 - `getExperimentFlag` records the exposure in the same call that evaluates the flag, which makes it hard to instrument the exposure in the wrong place.
 - The harness's own tallies matched Flagsmith's counts exactly in every run (for example 63/57 identities and the same sums of tokens), so we trust the pipeline.
 - `--json` with `--jq` kept the skill's output small, and `flagsmith evaluate --identity` is transient, which made safe probing possible.
