@@ -50,6 +50,29 @@ Every guest reached the form, made exactly one booking, and got it right. The ve
 
 Flagsmith's interval for both booking metrics is `[+0%, +0%]`. It comes from a normal approximation, which has no width when every identity converts, so it overstates what 300 guests can show. Exact 95% lower bounds on each version's correct-booking rate are 97.7% for classic (156 of 156) and 97.5% for accessible (144 of 144). What the data support is that each version fails fewer than about 1 guest in 40, and that any difference between them is smaller than that.
 
+## The decision
+
+The registered rule was to ship the accessible form if H1 and H2 hold, with a person explicitly accepting any breach of H3 or H4. Both held, and H4 was breached, so the tooling would not ship on its own.
+
+At 00:00 UTC, with nobody having accepted the token cost:
+
+```
+$ fx ship --flag booking_form --winner accessible
+fx: a guardrail is breached: Guest tokens. Ship control or keep collecting. Use --force only once the user has seen this and accepted it.
+```
+
+Nelson was then shown the results above, with a recommendation to ship, and approved. At 00:39 UTC:
+
+```
+$ fx ship --flag booking_form --winner accessible --approved-by "Nelson" --force
+overriding: a guardrail is breached: Guest tokens. Accepted by Nelson.
+experiment id=8 status=completed decision=variant
+recorded in experiments/approvals.tsv
+rolled out: 20 of 20 probe identities now get 'accessible'
+```
+
+The start, the refused attempt and the ship are the three lines of [../approvals.tsv](../approvals.tsv). The accessible form is now what every visitor gets.
+
 ## What was not registered
 
 The detour counts, their classification and the token breakdown are exploratory. They were looked at after the results, to explain them. The four registered metrics and the decision rule were not changed.

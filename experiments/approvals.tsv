@@ -1,2 +1,3 @@
 2026-11-26T23:49:39Z	start	env=jYeefpQjsUpNA4UX8BmmVe	flag=booking_form	experiment=8	by=Nelson	spec=experiments/booking_form.json
 2026-11-27T00:00:40Z	ship-refused	env=jYeefpQjsUpNA4UX8BmmVe	flag=booking_form	experiment=8	by=n/a	winner=accessible reason=a guardrail is breached: Guest tokens
+2026-11-27T00:39:46Z	ship	env=jYeefpQjsUpNA4UX8BmmVe	flag=booking_form	experiment=8	by=Nelson	winner=accessible overrode=a guardrail is breached: Guest tokens

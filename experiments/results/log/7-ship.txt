@@ -1,0 +1,6 @@
+$ fx ship --flag booking_form --winner accessible --approved-by "Nelson" --force
+overriding: a guardrail is breached: Guest tokens. Accepted by Nelson.
+experiment id=8 status=completed decision=variant
+recorded in experiments/approvals.tsv
+rolled out: 20 of 20 probe identities now get 'accessible'
+next: delete the losing code path, then retire the flag

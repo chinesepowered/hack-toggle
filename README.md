@@ -8,7 +8,7 @@ Capybara Onsen is a hot-spring booking site with two versions of its booking for
 
 A Flagsmith experiment splits AI guests between the two versions and counts correct bookings, completed bookings, steps and tokens. Each guest is a language model operating a real browser, so nobody types in a conversion rate. The result is whatever the agents do.
 
-> **Result, from 300 AI guests.** Every guest made a correct booking on both versions: 156 of 156 on classic, 144 of 144 on accessible. On the classic form 24 guests took a detour first, mostly clicking a sold-out time again and again because nothing marked it as sold out. On the accessible form none did. But the accessible form cost 13.6% more tokens per guest, which breached a guardrail, so the tooling refused to ship it until a person accepted that cost. Details under [Results](#results).
+> **Result, from 300 AI guests.** Every guest made a correct booking on both versions: 156 of 156 on classic, 144 of 144 on accessible. On the classic form 24 guests took a detour first, mostly clicking a sold-out time again and again because nothing marked it as sold out. On the accessible form none did. But the accessible form cost 13.6% more tokens per guest, which breached a guardrail, so the tooling refused to ship it until a person accepted that cost. A person did, and it shipped. Details under [Results](#results).
 
 Built for [Toggle Wars: The Flagsmith Experimentation Hackathon](https://www.wemakedevs.org/hackathons/flagsmith). One project, entered in all four tracks; see [The four tracks](#the-four-tracks).
 
@@ -83,7 +83,16 @@ On the accessible form the same time reads `radio "1:00 PM" [disabled]`, and no 
 fx: a guardrail is breached: Guest tokens. Ship control or keep collecting. Use --force only once the user has seen this and accepted it.
 ```
 
-The registered rule was to ship if bookings hold, with a person explicitly accepting any breach of the steps or tokens guardrail. That decision, and who made it, is in [experiments/approvals.tsv](experiments/approvals.tsv).
+The registered rule was to ship if bookings hold, with a person explicitly accepting any breach of the steps or tokens guardrail. A person was shown these results and approved, and the override is on the record:
+
+```
+$ fx ship --flag booking_form --winner accessible --approved-by "Nelson" --force
+overriding: a guardrail is breached: Guest tokens. Accepted by Nelson.
+experiment id=8 status=completed decision=variant
+rolled out: 20 of 20 probe identities now get 'accessible'
+```
+
+The start, the refused attempt and the ship are the three lines of [experiments/approvals.tsv](experiments/approvals.tsv). The accessible form is now what every visitor gets, served by the same flag.
 
 ### Staging runs before it
 
