@@ -1,0 +1,215 @@
+{
+  "guestId": "prod1_g0094",
+  "brief": {
+    "guestId": "prod1_g0094",
+    "date": "2026-12-31",
+    "preferredSlot": "16:00",
+    "expectedSlot": "19:00",
+    "guests": 3,
+    "bath": "cedar",
+    "addons": [],
+    "name": "Chloé García",
+    "email": "chloe.garcia@example.com"
+  },
+  "task": "Book a soak at Capybara Onsen for 3 guests on Thursday 31 December 2026.\nPreferred time: 4:00 PM. If that time is sold out, book the next later time that is available.\nBath: Cedar Tub.\nExtras: none.\nName: Chloé García. Email: chloe.garcia@example.com.\nAccept the house rules, confirm the booking, and stop once you see the confirmation.",
+  "variant": "classic",
+  "outcome": "done",
+  "actions": 16,
+  "turns": 22,
+  "tokens": {
+    "prompt": 57625,
+    "completion": 13453
+  },
+  "steps": [
+    {
+      "n": 1,
+      "thought": "Start the booking process by clicking 'Book a soak'.",
+      "action": "click",
+      "ref": "e9",
+      "target": "link \"Book a soak\" [ref=e9] [cursor=pointer]",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 2,
+      "thought": "I need to advance the calendar to December 2026 to select the 31st. Clicking the next-month navigation.",
+      "action": "click",
+      "ref": "e16",
+      "target": "generic [ref=e16] [cursor=pointer]",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 3,
+      "thought": "Select December 31 on the calendar.",
+      "action": "click",
+      "ref": "e57",
+      "target": "generic [ref=e57] [cursor=pointer]: \"31\"",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 4,
+      "thought": "4:00 PM and 5:30 PM are sold out (no cursor pointer), so I'll book the next available later time: 7:00 PM.",
+      "action": "click",
+      "ref": "e67",
+      "target": "generic [ref=e67] [cursor=pointer]: 7:00 PM",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 5,
+      "thought": "I accidentally selected 7:00 PM; I need to select 4:00 PM as the preferred time.",
+      "action": "click",
+      "ref": "e65",
+      "target": "generic [ref=e65]: 4:00 PM",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 6,
+      "thought": "Summary still shows 7:00 PM; let me try selecting 4:00 PM again to check if it's available.",
+      "action": "click",
+      "ref": "e65",
+      "target": "generic [ref=e65]: 4:00 PM",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 7,
+      "thought": "4:00 PM and 5:30 PM are sold out (no cursor=pointer), so 7:00 PM is the next available later time and is already selected. Now I need to increase guests from 2 to 3.",
+      "action": "click",
+      "ref": "e73",
+      "target": "generic [ref=e73] [cursor=pointer]",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 8,
+      "thought": "The time is set to 7:00 PM but I need 4:00 PM. Let me click 4:00 PM.",
+      "action": "click",
+      "ref": "e65",
+      "target": "generic [ref=e65]: 4:00 PM",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 9,
+      "thought": "4:00 PM has no cursor state, indicating it's sold out. The next later time is 5:30 PM. Let me select that.",
+      "action": "click",
+      "ref": "e66",
+      "target": "generic [ref=e66]: 5:30 PM",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 10,
+      "thought": "4:00 PM and 5:30 PM are sold out (no cursor), so 7:00 PM is the next available time and is already selected. Now I need to choose the Cedar Tub.",
+      "action": "click",
+      "ref": "e81",
+      "target": "generic [ref=e81] [cursor=pointer]",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 11,
+      "thought": "The summary shows 7:00 PM, but I should verify whether 4:00 PM is truly sold out and whether 5:30 PM is available, since the correct fallback is the next later available time. Let me test 5:30 PM.",
+      "action": "click",
+      "ref": "e66",
+      "target": "generic [ref=e66]: 5:30 PM",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 12,
+      "thought": "The summary shows 7:00 PM but the task requires 4:00 PM (or next available if sold out). Let me try clicking 4:00 PM first.",
+      "action": "click",
+      "ref": "e65",
+      "target": "generic [ref=e65]: 4:00 PM",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 13,
+      "invalid": true,
+      "raw": "",
+      "result": "Error: your reply was not a valid action. Reply with one JSON object in one of the given forms."
+    },
+    {
+      "n": 14,
+      "thought": "4:00 PM and 5:30 PM are disabled (sold out), so 7:00 PM is the correct next available time. Now I'll fill in the name.",
+      "action": "fill",
+      "ref": "e105",
+      "target": "textbox [ref=e105]",
+      "text": "Chloé García",
+      "result": "Filled.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 15,
+      "invalid": true,
+      "raw": "",
+      "result": "Error: your reply was not a valid action. Reply with one JSON object in one of the given forms."
+    },
+    {
+      "n": 16,
+      "invalid": true,
+      "raw": "",
+      "result": "Error: your reply was not a valid action. Reply with one JSON object in one of the given forms."
+    },
+    {
+      "n": 17,
+      "thought": "Fill in the email address for the booking.",
+      "action": "fill",
+      "ref": "e108",
+      "target": "textbox [ref=e108]",
+      "text": "chloe.garcia@example.com",
+      "result": "Filled.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 18,
+      "invalid": true,
+      "raw": "{\"thought\": \"The booking summary shows the correct details (Thursday 31 Dec 2026, 7:00 PM, 3 guests, Cedar Tub, no extras",
+      "result": "Error: your reply was not a valid action. Reply with one JSON object in one of the given forms."
+    },
+    {
+      "n": 19,
+      "thought": "I need to accept the house rules before confirming the booking. The time is 7:00 PM which is the next available after the preferred 4:00 PM (which appears to be sold out).",
+      "action": "click",
+      "ref": "e110",
+      "target": "generic [ref=e110] [cursor=pointer]: \"I accept the house rules: shower first, no splashing, be kind to capybaras.\"",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 20,
+      "invalid": true,
+      "raw": "",
+      "result": "Error: your reply was not a valid action. Reply with one JSON object in one of the given forms."
+    },
+    {
+      "n": 21,
+      "thought": "Booking summary looks correct (31 Dec 2026, 7:00 PM as next available, 3 guests, Cedar Tub, no extras, details filled, house rules accepted). Confirming now.",
+      "action": "click",
+      "ref": "e111",
+      "target": "generic [ref=e111] [cursor=pointer]: Confirm booking",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/confirmation/CAPY-02E9953A"
+    },
+    {
+      "n": 22,
+      "thought": "The confirmation page shows the booking is complete with all correct details: Thursday 31 December 2026, 3 guests, Cedar Tub, no extras, Chloé García, chloe.garcia@example.com. The time is 7:00 PM since 4:00 PM was sold out. Task is done.",
+      "action": "done",
+      "url": "http://localhost:3001/confirmation/CAPY-02E9953A"
+    }
+  ],
+  "startedAt": "2026-11-26T23:52:25.027Z",
+  "finalUrl": "http://localhost:3001/confirmation/CAPY-02E9953A",
+  "finishedAt": "2026-11-26T23:54:06.094Z",
+  "audit": {
+    "completed": true,
+    "correct": true,
+    "problems": []
+  }
+}

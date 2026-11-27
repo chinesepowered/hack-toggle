@@ -130,10 +130,16 @@ const summary = {
 };
 writeFileSync(join(out, 'summary.json'), JSON.stringify(summary, null, 2) + '\n');
 
-// A few complete transcripts: the shortest correct run of each version, and every incorrect one (up to four).
+// A few complete transcripts: the shortest correct run of each version, every
+// incorrect one (up to four), and the three guests who took the longest detours.
+const extraOf = new Map(rows.map((r) => [r.guest, r.extra_actions]));
 const pickTranscripts = [
   ...['classic', 'accessible'].map((v) => guests.filter((g) => g.variant === v && g.audit?.correct).sort((a, b) => a.actions - b.actions)[0]),
   ...guests.filter((g) => g.variant && !g.audit?.correct).slice(0, 4),
+  ...guests
+    .filter((g) => extraOf.get(g.guestId) > 0)
+    .sort((a, b) => extraOf.get(b.guestId) - extraOf.get(a.guestId))
+    .slice(0, 3),
 ].filter(Boolean);
 for (const g of pickTranscripts) copyFileSync(join(runDir, `${g.guestId}.json`), join(out, 'transcripts', `${g.guestId}.json`));
 

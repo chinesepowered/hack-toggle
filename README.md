@@ -8,7 +8,7 @@ Capybara Onsen is a hot-spring booking site with two versions of its booking for
 
 A Flagsmith experiment splits AI guests between the two versions and counts correct bookings, completed bookings, steps and tokens. Each guest is a language model operating a real browser, so nobody types in a conversion rate. The result is whatever the agents do.
 
-> **Status.** The production experiment is pre-registered and passes its pre-launch check. It starts when a person approves it, and this section will then carry its result. Three Staging runs (300 guests) are summarised under [Results so far](#results-so-far).
+> **Result, from 300 AI guests.** Every guest made a correct booking on both versions: 156 of 156 on classic, 144 of 144 on accessible. On the classic form 24 guests took a detour first, mostly clicking a sold-out time again and again because nothing marked it as sold out. On the accessible form none did. But the accessible form cost 13.6% more tokens per guest, which breached a guardrail, so the tooling refused to ship it until a person accepted that cost. Details under [Results](#results).
 
 Built for [Toggle Wars: The Flagsmith Experimentation Hackathon](https://www.wemakedevs.org/hackathons/flagsmith). One project, entered in all four tracks; see [The four tracks](#the-four-tracks).
 
@@ -48,9 +48,46 @@ We started out expecting the accessible form to raise correct bookings. Two pilo
 |---|---|
 | ![An AI guest clicking an unnamed element](docs/guest-classic.png) | ![An AI guest clicking a named button](docs/guest-accessible.png) |
 
-## Results so far
+## Results
 
-These are Staging runs, used to debug the harness and size the experiment. They are not the registered experiment.
+The registered experiment ran in Production on 26 November 2026. 300 AI guests went through, and the results were read once, after the last guest had finished. The full write-up and the evidence are in [experiments/results](experiments/results/README.md).
+
+![Results: correct bookings, actions and tokens per guest for each version](experiments/results/results.png)
+
+Flagsmith's verdict, as `fx results` printed it:
+
+```
+Booking correct (primary)  control 156/156 100%  accessible 144/144 100%  lift +0% [+0%, +0%]  chance 50%  guardrail ok
+Booking completed  control 156/156 100%  accessible 144/144 100%  lift +0% [+0%, +0%]  chance 50%  guardrail ok
+Guest steps  control n=156 mean 11.81  accessible n=144 mean 11.27  lift -4.6% [-7.9%, -1.3%]  chance 99.7%  guardrail ok
+Guest tokens  control n=156 mean 32090.93  accessible n=144 mean 36464.77  lift +13.6% [+8.9%, +18.4%]  chance 0%  GUARDRAIL BREACHED
+sample ratio: ok (control 156 / variation 144, expected 50/50, p=0.488)
+```
+
+This is what we registered beforehand: bookings and steps hold, and the token guardrail is breached.
+
+**Why bookings did not change.** The form echoes every selection as text in a summary card. A guest that clicks the wrong thing sees that the summary has not changed and tries something else, so both versions end in a correct booking.
+
+**Why the classic form still costs something.** 24 of 156 classic guests took a detour; none of the 144 accessible guests did. 21 of those detours were sold-out times, which the classic form marks only with a strike-through. One guest's own notes, from a run that took 22 actions where 13 would do:
+
+> "1:00 PM didn't register in the summary, suggesting it's sold out. Trying the next later time, 2:30 PM."
+> "Time still shows 'Not chosen yet'; I'll try clicking 1:00 PM again to select it."
+
+On the accessible form the same time reads `radio "1:00 PM" [disabled]`, and no guest clicked it. The other 3 detours were the guest stepper, whose plus and minus have no names on the classic form.
+
+**Why the accessible form costs more anyway.** Its accessibility snapshot is 22% longer, and a guest reads it on every step. Fewer steps and shorter replies do not make up for that, so the net is 13.6% more tokens per guest.
+
+**What the tooling did with that.** When asked to ship the accessible form, `fx` refused:
+
+```
+fx: a guardrail is breached: Guest tokens. Ship control or keep collecting. Use --force only once the user has seen this and accepted it.
+```
+
+The registered rule was to ship if bookings hold, with a person explicitly accepting any breach of the steps or tokens guardrail. That decision, and who made it, is in [experiments/approvals.tsv](experiments/approvals.tsv).
+
+### Staging runs before it
+
+These were used to debug the harness and size the experiment. They are not the registered experiment, but they agree with it.
 
 | Run | Guests | Correct, classic | Correct, accessible | Actions per guest | Tokens per guest |
 |---|---|---|---|---|---|
@@ -58,17 +95,7 @@ These are Staging runs, used to debug the harness and size the experiment. They 
 | Skill test 1 | 120 | 63 of 63 | 57 of 57 | 11.8 and 12.0 | 31,902 and 38,954 (+22%) |
 | Skill test 2 | 120 | 55 of 55 | 65 of 65 | 12.2 and 11.8 | 32,915 and 38,215 (+16%) |
 
-The two skill tests were run end to end by a fresh agent using only the skill (see [The four tracks](#the-four-tracks)). Flagsmith's verdict on the first, as `fx results` printed it:
-
-```
-Booking correct (primary)  control 63/63 100%  accessible 57/57 100%  lift +0% [+0%, +0%]  chance 50%  guardrail ok
-Booking completed  control 63/63 100%  accessible 57/57 100%  lift +0% [+0%, +0%]  chance 50%  guardrail ok
-Guest steps  control n=63 mean 11.83  accessible n=57 mean 11.98  lift +1.3% [-3.3%, +6%]  chance 28.8%  guardrail ok
-Guest tokens  control n=63 mean 31901.54  accessible n=57 mean 38954.04  lift +22.1% [+15.9%, +28.3%]  chance 0%  GUARDRAIL BREACHED
-sample ratio: ok (control 63 / variation 57, expected 50/50, p=0.584)
-```
-
-An earlier pilot of 80 guests found two problems in our own set-up, both fixed before these runs: the guests were shown Playwright's raw element references, whose format changes between pages, and several accessible controls carried an `aria-label` that only repeated their visible text.
+The two skill tests were run end to end by a fresh agent using only the skill (see [The four tracks](#the-four-tracks)). An earlier pilot of 80 guests found two problems in our own set-up, both fixed before these runs: the guests were shown Playwright's raw element references, whose format changes between pages, and several accessible controls carried an `aria-label` that only repeated their visible text.
 
 ## How Flagsmith is used
 

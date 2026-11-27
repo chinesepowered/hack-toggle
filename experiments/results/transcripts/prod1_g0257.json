@@ -1,0 +1,209 @@
+{
+  "guestId": "prod1_g0257",
+  "brief": {
+    "guestId": "prod1_g0257",
+    "date": "2026-12-19",
+    "preferredSlot": "13:00",
+    "expectedSlot": "17:30",
+    "guests": 6,
+    "bath": "moon",
+    "addons": [],
+    "name": "Leila Reyes",
+    "email": "leila.reyes@example.com"
+  },
+  "task": "Book a soak at Capybara Onsen for 6 guests on Saturday 19 December 2026.\nPreferred time: 1:00 PM. If that time is sold out, book the next later time that is available.\nBath: Moonlight Pool.\nExtras: none.\nName: Leila Reyes. Email: leila.reyes@example.com.\nAccept the house rules, confirm the booking, and stop once you see the confirmation.",
+  "variant": "classic",
+  "outcome": "done",
+  "actions": 18,
+  "turns": 20,
+  "tokens": {
+    "prompt": 51082,
+    "completion": 4154
+  },
+  "steps": [
+    {
+      "n": 1,
+      "thought": "Start the booking flow by clicking Book a soak.",
+      "action": "click",
+      "ref": "e9",
+      "target": "link \"Book a soak\" [ref=e9] [cursor=pointer]",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 2,
+      "thought": "Navigate the calendar from November to December 2026.",
+      "action": "click",
+      "ref": "e16",
+      "target": "generic [ref=e16] [cursor=pointer]",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 3,
+      "thought": "Select Saturday 19 December 2026.",
+      "action": "click",
+      "ref": "e45",
+      "target": "generic [ref=e45] [cursor=pointer]: \"19\"",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 4,
+      "thought": "Select the preferred time of 1:00 PM.",
+      "action": "click",
+      "ref": "e63",
+      "target": "generic [ref=e63]: 1:00 PM",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 5,
+      "thought": "The time still shows 'Not chosen yet', so the 1:00 PM selection didn't register. Click it again.",
+      "action": "click",
+      "ref": "e63",
+      "target": "generic [ref=e63]: 1:00 PM",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 6,
+      "thought": "Time is still 'Not chosen yet', so I need to select 1:00 PM.",
+      "action": "click",
+      "ref": "e63",
+      "target": "generic [ref=e63]: 1:00 PM",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 7,
+      "thought": "1:00 PM appears sold out (not selectable), so I'll try the next later time, 2:30 PM.",
+      "action": "click",
+      "ref": "e64",
+      "target": "generic [ref=e64]: 2:30 PM",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 8,
+      "thought": "Time still shows 'Not chosen yet'; 1:00 PM is sold out, so I'll click 2:30 PM again.",
+      "action": "click",
+      "ref": "e64",
+      "target": "generic [ref=e64]: 2:30 PM",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 9,
+      "thought": "Time isn't registering; set guests to 6 first since availability may depend on party size.",
+      "action": "click",
+      "ref": "e73",
+      "target": "generic [ref=e73] [cursor=pointer]",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 10,
+      "thought": "Increase guest count from 3 toward 6 by clicking the plus control again.",
+      "action": "click",
+      "ref": "e73",
+      "target": "generic [ref=e73] [cursor=pointer]",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 11,
+      "invalid": true,
+      "raw": "",
+      "result": "Error: your reply was not a valid action. Reply with one JSON object in one of the given forms."
+    },
+    {
+      "n": 12,
+      "thought": "1:00 PM, 2:30 PM, and 4:00 PM are sold out; the next later available time is 5:30 PM, so I'll select it.",
+      "action": "click",
+      "ref": "e66",
+      "target": "generic [ref=e66] [cursor=pointer]: 5:30 PM",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 13,
+      "thought": "Need to increase guests from 4 to 6, clicking the increment button first time.",
+      "action": "click",
+      "ref": "e73",
+      "target": "generic [ref=e73] [cursor=pointer]",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 14,
+      "thought": "Guests is at 5, need to increase to 6 by clicking the increment button.",
+      "action": "click",
+      "ref": "e73",
+      "target": "generic [ref=e73] [cursor=pointer]",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 15,
+      "thought": "Select the Moonlight Pool bath.",
+      "action": "click",
+      "ref": "e84",
+      "target": "generic [ref=e84] [cursor=pointer]",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 16,
+      "thought": "All selections look correct (Sat 19 Dec, 5:30 PM, 6 guests, Moonlight Pool, no extras). Now entering the full name.",
+      "action": "fill",
+      "ref": "e104",
+      "target": "textbox [ref=e104]",
+      "text": "Leila Reyes",
+      "result": "Filled.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 17,
+      "thought": "Fill in the email address.",
+      "action": "fill",
+      "ref": "e107",
+      "target": "textbox [ref=e107]",
+      "text": "leila.reyes@example.com",
+      "result": "Filled.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 18,
+      "thought": "Accept the house rules before confirming the booking.",
+      "action": "click",
+      "ref": "e109",
+      "target": "generic [ref=e109] [cursor=pointer]: \"I accept the house rules: shower first, no splashing, be kind to capybaras.\"",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 19,
+      "thought": "All details are correct, so I will confirm the booking.",
+      "action": "click",
+      "ref": "e110",
+      "target": "generic [ref=e110] [cursor=pointer]: Confirm booking",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/confirmation/CAPY-2DE77068"
+    },
+    {
+      "n": 20,
+      "thought": "The confirmation page shows the booking is complete with all correct details. Task is done.",
+      "action": "done",
+      "url": "http://localhost:3001/confirmation/CAPY-2DE77068"
+    }
+  ],
+  "startedAt": "2026-11-26T23:57:36.555Z",
+  "finalUrl": "http://localhost:3001/confirmation/CAPY-2DE77068",
+  "finishedAt": "2026-11-26T23:58:16.161Z",
+  "audit": {
+    "completed": true,
+    "correct": true,
+    "problems": []
+  }
+}
