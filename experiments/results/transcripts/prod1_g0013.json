@@ -1,0 +1,131 @@
+{
+  "guestId": "prod1_g0013",
+  "brief": {
+    "guestId": "prod1_g0013",
+    "date": "2026-12-18",
+    "preferredSlot": "16:00",
+    "expectedSlot": "17:30",
+    "guests": 1,
+    "bath": "yuzu",
+    "addons": [],
+    "name": "Tomás Sato",
+    "email": "tomas.sato@example.com"
+  },
+  "task": "Book a soak at Capybara Onsen for 1 guest on Friday 18 December 2026.\nPreferred time: 4:00 PM. If that time is sold out, book the next later time that is available.\nBath: Yuzu Bath.\nExtras: none.\nName: Tomás Sato. Email: tomas.sato@example.com.\nAccept the house rules, confirm the booking, and stop once you see the confirmation.",
+  "variant": "accessible",
+  "outcome": "done",
+  "actions": 10,
+  "turns": 11,
+  "tokens": {
+    "prompt": 31192,
+    "completion": 1064
+  },
+  "steps": [
+    {
+      "n": 1,
+      "thought": "Start the booking flow by clicking the Book a soak link.",
+      "action": "click",
+      "ref": "e9",
+      "target": "link \"Book a soak\" [ref=e9] [cursor=pointer]",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 2,
+      "thought": "Navigate from November to December 2026 to select the requested date.",
+      "action": "click",
+      "ref": "e17",
+      "target": "button \"Next month\" [ref=e17] [cursor=pointer]",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 3,
+      "thought": "Select Friday 18 December 2026 as the booking day.",
+      "action": "click",
+      "ref": "e44",
+      "target": "button \"Friday 18 December 2026\" [ref=e44] [cursor=pointer]: \"18\"",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 4,
+      "thought": "4:00 PM is sold out, so I need to book the next later available time, which is 5:30 PM.",
+      "action": "click",
+      "ref": "e66",
+      "target": "radio \"5:30 PM\" [ref=e66] [cursor=pointer]",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 5,
+      "thought": "Guest count is 2; remove one to make it 1.",
+      "action": "click",
+      "ref": "e71",
+      "target": "button \"Remove one guest\" [ref=e71] [cursor=pointer]",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 6,
+      "thought": "4:00 PM is sold out, so 5:30 PM is correctly selected as the next later time. Now select the Yuzu Bath.",
+      "action": "click",
+      "ref": "e77",
+      "target": "radio \"Yuzu Bath Open-air pool with floating yuzu $28 per guest\" [ref=e77] [cursor=pointer]",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 7,
+      "thought": "Enter the guest's full name.",
+      "action": "fill",
+      "ref": "e105",
+      "target": "textbox \"Full name\" [ref=e105]",
+      "text": "Tomás Sato",
+      "result": "Filled.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 8,
+      "thought": "Fill in the email field.",
+      "action": "fill",
+      "ref": "e108",
+      "target": "textbox \"Email\" [ref=e108]",
+      "text": "tomas.sato@example.com",
+      "result": "Filled.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 9,
+      "thought": "Accept the house rules before confirming.",
+      "action": "click",
+      "ref": "e110",
+      "target": "'checkbox \"I accept the house rules: shower first, no splashing, be kind to capybaras.\" [ref=e110] [cursor=pointer]'",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/book"
+    },
+    {
+      "n": 10,
+      "thought": "All details are set and the house rules are accepted; confirming the booking.",
+      "action": "click",
+      "ref": "e111",
+      "target": "button \"Confirm booking\" [ref=e111] [cursor=pointer]",
+      "result": "Clicked.",
+      "url": "http://localhost:3001/confirmation/CAPY-17C7725A"
+    },
+    {
+      "n": 11,
+      "thought": "Confirmation page shows the booking is complete with all correct details.",
+      "action": "done",
+      "url": "http://localhost:3001/confirmation/CAPY-17C7725A"
+    }
+  ],
+  "startedAt": "2026-11-26T23:49:56.349Z",
+  "finalUrl": "http://localhost:3001/confirmation/CAPY-17C7725A",
+  "finishedAt": "2026-11-26T23:50:09.550Z",
+  "audit": {
+    "completed": true,
+    "correct": true,
+    "problems": []
+  }
+}

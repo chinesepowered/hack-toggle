@@ -62,6 +62,6 @@ The detour counts, their classification and the token breakdown are exploratory.
 | `guests.csv` | One row per guest: version, outcome, actions, extra actions, turns, tokens. |
 | `summary.json` | Per-version totals, means and exact bounds. |
 | `flagsmith-experiment.json`, `flagsmith-results.json` | The experiment and its results as Flagsmith's API returned them. |
-| `transcripts/` | Six complete guest transcripts: the shortest run on each version, the three longest detours and one stepper detour. |
+| `transcripts/` | Seven complete guest transcripts: the shortest run on each version, the three longest detours, one stepper detour, and one accessible guest meeting a sold-out time. |
 | `results.html`, `results.png` | The figure. |
 | [`../approvals.tsv`](../approvals.tsv) | Who approved what, and what was refused. |

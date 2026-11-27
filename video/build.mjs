@@ -69,6 +69,8 @@ pre{margin:0;font-family:'DejaVu Sans Mono',ui-monospace,Menlo,monospace}
 .term .cmd{color:#f6b93b;font-weight:700}.term .ok{color:#8ad6a4}.term .fail{color:#ff8f80;font-weight:700}
 .term .win{color:#8ad6a4;font-weight:700}.term .warn{color:#f6b93b;font-weight:700}.term .dim{color:#a8998a}
 .term{white-space:pre-wrap;overflow-wrap:anywhere}
+.quote{margin-top:26px;padding:24px 30px;background:#fffdf8;border:2px solid #e7d9c4;border-radius:24px;font-size:30px;line-height:1.35;display:flex;gap:22px;align-items:center}
+.quote .chip{flex:none}
 table.verdict{width:100%;border-collapse:separate;border-spacing:0 14px;font-size:30px;white-space:nowrap}
 table.verdict thead th{font-size:23px;font-weight:600;color:#7a6555;text-align:left;padding:0 22px}
 table.verdict tbody tr{background:#fffdf8}
@@ -129,10 +131,19 @@ const TEMPLATES = {
       ${[left, right].map((s) => `<div class="card"><div class="card-head"><span class="chip ${s.tone || ''}">${esc(s.label)}</span>${esc(s.note || '')}</div><pre class="code">${s.lines.map(colourSnapshot).join('\n')}</pre></div>`).join('')}
       </div>${banner ? `<div class="banner">${banner}</div>` : ''}</div>`),
 
-  terminal: ({ heading, lines, file, from, to }) => {
-    const all = lines ?? text(file).split('\n').slice(from ?? 0, to);
-    return page(`<div class="pad"><h2>${esc(heading)}</h2><pre class="term">${all.map(colourTerminal).join('\n')}</pre></div>`);
+  // A terminal session. Each part is a command line followed by the real output
+  // it produced, read from a saved file (optionally only lines `from`..`to`).
+  terminal: ({ heading, parts, small }) => {
+    const all = parts.flatMap((p, i) => [
+      ...(i ? [''] : []),
+      `$ ${p.cmd}`,
+      ...text(p.file).split('\n').filter((l) => l.trim() && !l.startsWith('$ ')).slice(p.from ?? 0, p.to),
+    ]);
+    return page(`<div class="pad"><h2>${esc(heading)}</h2><pre class="term"${small ? ' style="font-size:23px"' : ''}>${all.map(colourTerminal).join('\n')}</pre></div>`);
   },
+
+  // A full-frame picture, such as a saved screenshot of the Flagsmith dashboard.
+  picture: ({ image }) => page(`<div class="shot"><img src="${fileUrl(image)}"></div>`),
 
   // The output of `fx results`, laid out as a table so it can be read at video size.
   // Every cell is taken from the real output file; nothing is recomputed here.
@@ -162,10 +173,12 @@ const TEMPLATES = {
       <div class="ratio">${esc(ratio)}</div>${banner ? `<div class="banner" style="margin-top:auto">${banner}</div>` : ''}</div>`);
   },
 
-  stats: ({ heading, items, banner }) =>
+  stats: ({ heading, items, quotes = [], banner }) =>
     page(`<div class="pad"><h2>${esc(heading)}</h2><div class="stat">${items
       .map((i) => `<div><div class="k">${esc(i.label)}</div><div class="v" style="color:${i.colour || '#3a2a1f'}">${esc(i.value)}</div><div class="n">${esc(i.note || '')}</div></div>`)
-      .join('')}</div>${banner ? `<div class="banner" style="margin-top:auto">${banner}</div>` : ''}</div>`),
+      .join('')}</div>${quotes
+      .map((q) => `<div class="quote"><span class="chip ${q.tone || ''}">${esc(q.who)}</span><span>&ldquo;${esc(q.text)}&rdquo;</span></div>`)
+      .join('')}${banner ? `<div class="banner" style="margin-top:auto">${banner}</div>` : ''}</div>`),
 
   guestFrame: ({ image, box, who, tone, thought, saw, sawTone }) =>
     page(`<div class="shot"><img src="${fileUrl(image)}">${
@@ -221,6 +234,12 @@ async function renderCard(id, n, html) {
 async function renderScene(scene) {
   const v = scene.visual;
   if (v.type === 'card') return [{ file: await renderCard(scene.id, 0, TEMPLATES[v.template](v.data)), weight: 1 }];
+  // Several cards in a row, each with its share of the scene's time.
+  if (v.type === 'cards') {
+    const frames = [];
+    for (const [i, card] of v.cards.entries()) frames.push({ file: await renderCard(scene.id, i, TEMPLATES[card.template](card.data)), weight: card.weight ?? 1 });
+    return frames;
+  }
 
   if (v.type === 'live') {
     if (v.login) await logInToFlagsmith();

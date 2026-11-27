@@ -7,7 +7,7 @@
         "type": "live",
         "shots": [
           {
-            "url": "http://localhost:3000/",
+            "url": "http://localhost:3001/",
             "settle": 1200
           }
         ]
@@ -39,7 +39,7 @@
     },
     {
       "id": "agentview",
-      "say": "But an AI agent does not look at pixels. It reads the accessibility tree. And there, the two versions could hardly be more different: unnamed controls on one side, buttons with names and state on the other.",
+      "say": "But an AI agent does not look at pixels. It reads the accessibility tree. And there, the two versions could hardly be more different: unnamed controls on one side, buttons with names and states on the other.",
       "visual": {
         "type": "card",
         "template": "snapshots",
@@ -99,77 +99,147 @@
       }
     },
     {
+      "id": "question",
+      "say": "So before the upgrade goes to everyone, one question. What does it do to the AI guests? We expected it to help. Instead of arguing about it, we ran an experiment.",
+      "visual": {
+        "type": "card",
+        "template": "title",
+        "data": {
+          "title": "Does the upgrade help the AI guests, or hurt them?",
+          "sub": "We expected it to help. So we tested it."
+        }
+      }
+    },
+    {
+      "id": "flag",
+      "say": "Both versions sit behind one Flagsmith feature flag, on a Flagsmith instance we host ourselves. A Flagsmith experiment splits the guests fifty-fifty and watches four metrics: correct bookings, completed bookings, steps, and tokens.",
+      "visual": {
+        "type": "card",
+        "template": "picture",
+        "data": {
+          "image": "docs/flagsmith-experiment.png"
+        }
+      }
+    },
+    {
       "id": "guest-classic",
-      "say": "Here is one guest on the classic form, finding its way by position and context.",
+      "say": "The guests are language models driving real browsers. Each one gets a booking to make, and no hint about which version it was served. Watch this one on the classic form. Its preferred time is sold out, but nothing in the markup says so. It clicks, nothing happens, and it clicks again.",
       "visual": {
         "type": "guest",
-        "dir": "video/build/guest-classic",
+        "dir": "video/build/guest2-classic-1",
         "who": "AI guest on the classic form",
         "tone": "orange",
         "pick": [
           1,
           2,
+          3,
           4,
-          8,
-          9,
-          12
+          5,
+          6,
+          7,
+          8
         ]
       }
     },
     {
       "id": "guest-accessible",
-      "say": "And one on the accessible form, reading names.",
+      "say": "On the accessible form, the same time is marked as disabled. The guest reads that, and goes straight to the next free slot.",
       "visual": {
         "type": "guest",
-        "dir": "video/build/guest-accessible",
+        "dir": "video/build/guest2-accessible",
         "who": "AI guest on the accessible form",
         "tone": "teal",
         "pick": [
-          1,
           2,
-          4,
-          8,
-          9,
-          12
+          3,
+          4
         ]
       }
     },
     {
-      "id": "flagdash",
-      "say": "Both versions sit behind a single Flagsmith feature flag.",
+      "id": "check",
+      "say": "The experiment itself is run by a coding agent, using a skill we built on the Flagsmith command line. Before anything goes live, it checks that every event really arrives, and that every user still gets the control. Then it stops, and waits for a person to approve the start.",
       "visual": {
-        "type": "live",
-        "login": true,
-        "shots": [
-          {
-            "url": "{flagsmith}/project/{project}/environment/{staging}/features",
-            "settle": 5000
-          },
-          {
-            "url": "{flagsmith}/project/{project}/environment/{staging}/experiments/5",
-            "settle": 6000
-          },
-          {
-            "do": [
-              [
-                "scroll",
-                560
-              ]
-            ],
-            "settle": 1200
-          }
-        ]
+        "type": "card",
+        "template": "terminal",
+        "data": {
+          "heading": "An agent runs it. A person approves it.",
+          "small": true,
+          "parts": [
+            {
+              "cmd": "fx check --flag booking_form",
+              "file": "experiments/results/log/1-check.txt",
+              "to": 7
+            },
+            {
+              "cmd": "fx start --flag booking_form --approved-by \"Nelson\"",
+              "file": "experiments/results/log/2-start.txt",
+              "to": 2
+            }
+          ]
+        }
       }
     },
     {
-      "id": "termtest",
-      "say": "The verdict.",
+      "id": "analysis",
+      "say": "Three hundred guests later, this is Flagsmith's analysis.",
+      "visual": {
+        "type": "card",
+        "template": "picture",
+        "data": {
+          "image": "docs/flagsmith-results.png"
+        }
+      }
+    },
+    {
+      "id": "verdict",
+      "say": "Correct bookings: 156 out of 156 on the classic form, and 144 out of 144 on the accessible one. No difference at all. Steps went down a little. But tokens per guest went up by almost fourteen percent, and that guardrail is breached.",
       "visual": {
         "type": "card",
         "template": "verdict",
         "data": {
-          "heading": "Flagsmith's verdict",
-          "file": "data/logs/rehearsal-results.txt"
+          "heading": "Flagsmith's verdict, read by the skill",
+          "file": "experiments/results/log/5-results.txt"
+        }
+      }
+    },
+    {
+      "id": "why",
+      "say": "Why? A capable agent recovers from its mistakes, so the bookings come out right either way. But on the classic form, 24 guests took a detour first. On the accessible form, none did. And yet the accessible page takes longer to read, on every single step. Fewer mistakes, more reading. The reading wins.",
+      "visual": {
+        "type": "card",
+        "template": "stats",
+        "data": {
+          "heading": "Fewer mistakes, more reading",
+          "items": [
+            {
+              "label": "Guests who took a detour",
+              "value": "24 vs 0",
+              "note": "of 156 on classic and 144 on accessible"
+            },
+            {
+              "label": "Tokens to read one page",
+              "value": "+22%",
+              "note": "2,897 on accessible against 2,381 on classic"
+            },
+            {
+              "label": "Tokens per guest",
+              "value": "+13.6%",
+              "note": "36,465 against 32,091. The guardrail was: no increase."
+            }
+          ],
+          "quotes": [
+            {
+              "who": "a guest on classic",
+              "tone": "orange",
+              "text": "1:00 PM didn't register in the summary, suggesting it's sold out. Trying the next later time, 2:30 PM."
+            },
+            {
+              "who": "a guest on accessible",
+              "tone": "teal",
+              "text": "4:00 PM is sold out, so I need to book the next later available time, which is 5:30 PM."
+            }
+          ]
         }
       }
     }
