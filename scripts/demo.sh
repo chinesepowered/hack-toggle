@@ -34,20 +34,22 @@ stop() { echo "demo: $*" >&2; exit 1; }
 for tool in docker node jq curl flagsmith; do
   command -v "$tool" >/dev/null || stop "'$tool' is required"
 done
+# The current CLI prints "flagsmith version v2.0.0". The older npm package of the same name does not.
 CLI_VERSION=$(flagsmith --version 2>&1) || true
-[[ $CLI_VERSION =~ v([2-9]|[1-9][0-9])\. ]] || stop "the Flagsmith CLI must be v2 or later (found: ${CLI_VERSION%%$'\n'*})"
+[[ $CLI_VERSION =~ ^flagsmith\ version\ v?([0-9]+)\. ]] && [ "${BASH_REMATCH[1]}" -ge 2 ] ||
+  stop "the Flagsmith CLI must be v2 or later (found: ${CLI_VERSION%%$'\n'*})"
 [ -f .env ] || stop "copy .env.example to .env and fill it in first"
 # Something already answering on the site's port would be mistaken for this run's site.
-if curl -s -o /dev/null "http://localhost:$PORT/"; then
+if curl --noproxy '*' -s -o /dev/null "http://localhost:$PORT/"; then
   stop "port $PORT is already in use. Stop what is running there, or pick another: PORT=3100 $0"
 fi
 # Flagsmith's API and dashboard are published on port 8000.
-if [ -z "$(docker compose ps -q flagsmith 2>/dev/null)" ] && curl -s -o /dev/null "http://localhost:8000/"; then
+if [ -z "$(docker compose ps -q flagsmith 2>/dev/null)" ] && curl --noproxy '*' -s -o /dev/null "http://localhost:8000/"; then
   stop "port 8000 is already in use by something other than this project's Flagsmith. Stop it first."
 fi
 [ -d node_modules ] || npm install --no-audit --no-fund
 # The guests drive Chromium through Playwright, which uses its own build of it.
-if ! node -e "require('fs').accessSync(require('playwright').chromium.executablePath())" 2>/dev/null; then
+if ! node -e "require('playwright').chromium.launch().then((b) => b.close())" 2>/dev/null; then
   echo "==> downloading Playwright's Chromium (once, about 170 MB)"
   npx playwright install chromium
 fi
@@ -69,10 +71,10 @@ ONSEN_ENV=staging PORT=$PORT node app/server.mjs >data/logs/app-staging.log 2>&1
 APP_PID=$!
 trap 'kill $APP_PID 2>/dev/null || true' EXIT
 for _ in $(seq 1 40); do
-  curl -fs "http://localhost:$PORT/healthz" >/dev/null 2>&1 && break
+  curl --noproxy '*' -fs "http://localhost:$PORT/healthz" >/dev/null 2>&1 && break
   sleep 0.5
 done
-if ! kill -0 "$APP_PID" 2>/dev/null || [[ $(curl -fs "http://localhost:$PORT/healthz") != *'"flagsmith":true'* ]]; then
+if ! kill -0 "$APP_PID" 2>/dev/null || [[ $(curl --noproxy '*' -fs "http://localhost:$PORT/healthz") != *'"flagsmith":true'* ]]; then
   echo "demo: the booking site did not start, or cannot reach Flagsmith. Its log:" >&2
   tail -n 15 data/logs/app-staging.log >&2
   exit 1
@@ -87,11 +89,18 @@ case $EARLIER in
     stop "the accessible form has already been shipped on this instance, so there is no control left to test against. Start over: npm run flagsmith:reset" ;;
   *status=completed* | "no experiment"*) ;;
   *)
-    stop "an experiment from an earlier run is still open here ($EARLIER). End it with: source .flagsmith/flagsmith.env && $FX stop --flag booking_form. Or start over: npm run flagsmith:reset" ;;
+    stop "an experiment from an earlier run is still open here ($EARLIER). End it with: source .flagsmith/flagsmith.env && $FX stop --flag booking_form --log data/logs/demo-approvals.log. Or start over: npm run flagsmith:reset" ;;
 esac
 npm run --silent guests -- --env staging --base "http://localhost:$PORT" --n 2 --run-id "$RUN_ID-rehearsal" >"data/logs/$RUN_ID-rehearsal.log" 2>&1 ||
   { echo "demo: the rehearsal failed. Its log:" >&2; tail -n 15 "data/logs/$RUN_ID-rehearsal.log" >&2; exit 1; }
-$FX check --flag booking_form ||
+# The rehearsal's events can take a moment to reach the warehouse, so the check gets three tries.
+CHECKED=0
+for _ in 1 2 3; do
+  if CHECK=$($FX check --flag booking_form 2>&1); then CHECKED=1; break; fi
+  sleep 5
+done
+echo "$CHECK"
+[ $CHECKED = 1 ] ||
   stop "the pre-launch check failed. If an event 'has never been received', the two rehearsal guests did not get that far: see data/logs/$RUN_ID-rehearsal.log. A weaker guest model may fail the booking itself."
 $FX start --flag booking_form --log data/logs/demo-approvals.log
 
@@ -110,8 +119,9 @@ Dashboard: http://localhost:8000 (login in .flagsmith/state.json)
 Site:      it stopped with this script. Start it again with: npm run app
 Decide, in this terminal:
   source .flagsmith/flagsmith.env
-  $FX stop --flag booking_form
-  $FX ship --flag booking_form --winner accessible --approved-by "Your name"
-       (ship is refused while a guardrail is breached; add --force only to accept that cost)
+  $FX stop --flag booking_form --log data/logs/demo-approvals.log
+  $FX ship --flag booking_form --winner accessible --approved-by "Your name" --log data/logs/demo-approvals.log
+       (ship is refused while a guardrail is breached; add --force only to accept that cost.
+        --log keeps this demo out of the repository's own approvals record.)
 Start over from nothing: npm run flagsmith:reset
 EOF

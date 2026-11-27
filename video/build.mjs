@@ -224,12 +224,12 @@ const TEMPLATES = {
       <div class="ratio">${esc(ratio)}</div>${banner ? `<div class="banner" style="margin-top:auto">${banner}</div>` : ''}</div>`);
   },
 
-  stats: ({ heading, items, quotes = [], banner }) =>
+  stats: ({ heading, items, quotes = [], foot, banner }) =>
     page(`<div class="pad"><h2>${esc(heading)}</h2><div class="stat">${items
       .map((i) => `<div><div class="k">${esc(i.label)}</div><div class="v" style="color:${i.colour || '#3a2a1f'}">${esc(i.value)}</div><div class="n">${esc(i.note || '')}</div></div>`)
       .join('')}</div>${quotes
       .map((q) => `<div class="quote"><span class="chip ${q.tone || ''}">${esc(q.who)}</span>${q.code ? `<code>${esc(q.code)}</code>` : `<span>&ldquo;${esc(q.text)}&rdquo;</span>`}</div>`)
-      .join('')}${banner ? `<div class="banner" style="margin:auto 0 30px">${banner}</div>` : ''}</div>`),
+      .join('')}${foot ? `<div class="foot" style="margin-top:26px">${esc(foot)}</div>` : ''}${banner ? `<div class="banner" style="margin:auto 0 30px">${banner}</div>` : ''}</div>`),
 
   guestFrame: ({ image, box, who, tone, thought, saw, sawTone }) =>
     page(`<div class="shot"><img src="${fileUrl(image)}">${

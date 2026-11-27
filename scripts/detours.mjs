@@ -58,9 +58,20 @@ for (const dir of dirs) {
       const label = (s.target || '').match(/(\d{1,2}:\d\d [AP]M)/)?.[1];
       return label && isSoldOut(g.brief.date, slotByLabel.get(label));
     });
-    // The first wasted action: a click on a sold-out time, or else the first
-    // action that repeats or undoes the one before it.
-    const first = onSoldOut[0] ?? acts.find((s, i) => i > 0 && s.ref === acts[i - 1].ref) ?? acts[Math.max(acts.length - extra, 0)];
+    // The first wasted action, where it can be told: a click on a sold-out time,
+    // or else the first press of the guest stepper in the wrong direction. The
+    // stepper's plus and minus have no text in the classic version and sit two
+    // elements apart, either side of the count. The one a guest pressed most,
+    // after picking the day, is the direction it needed; a press of the other
+    // one is a step the wrong way.
+    const dayAt = acts.findIndex((s) => /: "\d+"$|button "\w+ \d+ \w+ \d{4}"/.test(s.target || ''));
+    const unnamed = acts.filter((s, i) => i > dayAt && /^generic( \[ref=\w+\])?( \[cursor=pointer\])?$|button "(Add|Remove) one guest"/.test(s.target || ''));
+    const presses = {};
+    for (const s of unnamed) presses[s.ref] = (presses[s.ref] || 0) + 1;
+    const position = (ref) => Number(String(ref).replace(/\D/g, ''));
+    const [most] = Object.entries(presses).sort((a, b) => b[1] - a[1]);
+    const other = most && Object.entries(presses).find(([ref, n]) => ref !== most[0] && n < most[1] && Math.abs(position(ref) - position(most[0])) <= 2);
+    const first = onSoldOut[0] ?? (other ? unnamed.find((s) => s.ref === other[0]) : undefined);
     detours.push({
       guest: g.guestId,
       version: g.variant,
@@ -69,7 +80,8 @@ for (const dir of dirs) {
       other_extra_actions: extra - onSoldOut.length,
       preferred_time_sold_out: g.brief.preferredSlot !== g.brief.expectedSlot ? 1 : 0,
       correct: g.audit.correct ? 1 : 0,
-      guest_note_after_the_first_wasted_action: g.steps.find((s) => s.n === first.n + 1)?.thought ?? first.thought,
+      // The guest's own note on the step after it, when it has seen the result. Empty if no wasted action could be singled out.
+      guest_note_after_the_first_wasted_action: first ? (g.steps.find((s) => s.n === first.n + 1)?.thought ?? first.thought) : '',
     });
   }
   for (const [name, v] of Object.entries(versions).sort()) {

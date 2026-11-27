@@ -13,7 +13,7 @@
     "flagsmith:reset": "docker compose down -v && rm -rf .flagsmith",
     "bootstrap": "node scripts/bootstrap.mjs",
     "app": "node app/server.mjs",
-    "guests": "NODE_USE_ENV_PROXY=1 NODE_NO_WARNINGS=1 node guests/run.mjs",
+    "guests": "NODE_USE_ENV_PROXY=1 no_proxy=\"localhost,127.0.0.1,$no_proxy\" NO_PROXY=\"localhost,127.0.0.1,$NO_PROXY\" NODE_NO_WARNINGS=1 node guests/run.mjs",
     "parity": "node scripts/parity.mjs",
     "test": "node --test"
   },

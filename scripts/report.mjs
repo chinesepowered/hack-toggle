@@ -242,7 +242,7 @@ const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>
   <h1>Correct bookings: ${pct(c.correctRate, 1)} classic, ${pct(a.correctRate, 1)} accessible. Tokens per guest: ${summary.tokensLift >= 0 ? '+' : ''}${pct(summary.tokensLift, 0)} on accessible.</h1>
   <div class="sub">${summary.guests} AI guests (${esc(summary.model ?? '')}), ${envName}, Flagsmith experiment ${experimentId}. Figures from the run log; Flagsmith's verdicts are in the table below the figure.</div>
   <div class="tiles">
-    ${tile('Correct bookings', pair(`${c.correct}/${c.guests}`, `${a.correct}/${a.guests}`), `${pct(c.correctRate)} and ${pct(a.correctRate)}. Exact 95% lower bounds: <b>${pct(c.correctRateExact95[0])}</b> and <b>${pct(a.correctRateExact95[0])}</b>.`)}
+    ${tile('Correct bookings', pair(`${c.correct}/${c.guests}`, `${a.correct}/${a.guests}`), `${pct(c.correctRate)} and ${pct(a.correctRate)}. Lower limits of exact 95% intervals: <b>${pct(c.correctRateExact95[0])}</b> and <b>${pct(a.correctRateExact95[0])}</b>.`)}
     ${tile('Actions per guest', pair(fmt(c.actionsMean, 1), fmt(a.actionsMean, 1)), `Clicks and fills, mean. <b>${c.guestsWithExtraActions} of ${c.guests}</b> classic guests took a detour; <b>${a.guestsWithExtraActions} of ${a.guests}</b> accessible guests did.`)}
     ${tile('Tokens per guest', pair(fmt(c.tokensMean), fmt(a.tokensMean)), `Mean, prompt plus completion. Accessible is <b>${pct(Math.abs(summary.tokensLift), 0)} ${summary.tokensLift >= 0 ? 'higher' : 'lower'}</b>: ${fmt(a.promptTokensPerTurn)} against ${fmt(c.promptTokensPerTurn)} prompt tokens per turn.`)}
   </div>

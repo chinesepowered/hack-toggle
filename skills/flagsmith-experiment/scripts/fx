@@ -303,7 +303,8 @@ cmd_start() {
 
   # Creating an experiment already serves the variation, so create and start
   # back to back, and remove it again if the start does not go through.
-  XID=$(api experiments/ --input - --jq .id <<<"$body")
+  XID=$(api experiments/ --input - --jq .id <<<"$body") ||
+    die "could not create the experiment. If Flagsmith shows one on '$FLAG' all the same, it may already be serving the variation: end it with fx stop"
   if ! api "experiments/$XID/start/" -X POST --jq '"experiment id=\(.id) status=\(.status) started=\(.started_at)"'; then
     api "experiments/$XID/" -X DELETE >/dev/null 2>&1 ||
       die "could not start experiment id=$XID and could not remove it either. It may already be serving the variation: run fx stop, or delete it in the dashboard, then fx check"
@@ -409,17 +410,23 @@ fetch_results() {
 }
 
 # Ask Flagsmith to recompute the results and wait for them. Refreshes are limited
-# to one every 5 minutes; a throttled call is not an error, and returns 1.
+# to one every 5 minutes, and a recomputation can be slow; neither is an error.
+# When the results on hand are not fresh, REFRESH_NOTE says so.
 refresh_results() {
   local before after tries=0
+  REFRESH_NOTE=""
   before=$(api "experiments/$XID/results/" --jq '.results.as_of // "none"')
-  api "experiments/$XID/results/refresh/" -X POST >/dev/null 2>&1 || return 1
+  if ! api "experiments/$XID/results/refresh/" -X POST >/dev/null 2>&1; then
+    REFRESH_NOTE="note: refresh throttled (once per 5 minutes); these are the last computed results"
+    return 0
+  fi
   while [ $tries -lt 15 ]; do
     sleep 2
     after=$(api "experiments/$XID/results/" --jq '.results.as_of // "none"')
-    [ "$after" = "$before" ] || break
+    [ "$after" = "$before" ] || return 0
     tries=$((tries + 1))
   done
+  REFRESH_NOTE="note: Flagsmith has not finished recomputing after 30 seconds; these are the last computed results"
 }
 
 cmd_results() {
@@ -430,7 +437,8 @@ cmd_results() {
     fetch_results
     return
   fi
-  refresh_results || echo "note: refresh throttled (once per 5 minutes); showing the last computed results"
+  refresh_results
+  [ -z "$REFRESH_NOTE" ] || echo "$REFRESH_NOTE"
   local summary
   summary=$(fetch_results)
   echo "$summary"
@@ -458,8 +466,9 @@ cmd_ship() {
   [ -n "$WINNER" ] || die "ship needs --winner control|KEY"
   require_experiment
   local summary primary body vid served_value
-  # Judge the newest results Flagsmith will compute, not whatever was read last.
-  refresh_results || true
+  # Judge the newest results Flagsmith will compute, and say so if it will not compute new ones now.
+  refresh_results
+  [ -z "$REFRESH_NOTE" ] || echo "$REFRESH_NOTE"
   summary=$(fetch_results)
   primary=$(grep -m 1 '(primary)' <<<"$summary" || true)
   # Work out whether the results allow this, whatever --force says, so that an

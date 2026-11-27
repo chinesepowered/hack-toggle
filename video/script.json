@@ -199,7 +199,7 @@
     },
     {
       "id": "guest-classic",
-      "say": "The guests are language models driving real browsers, with no hint about which version they were served. Watch this one on the classic form. Its preferred time is sold out, and the only clue in the markup is a missing pointer cursor. It clicks, nothing happens, and it clicks again. This is the worst case we saw. Most detours were a single wasted click.",
+      "say": "The guests are language models driving real browsers, with no hint about which version they were served. Watch this one on the classic form. Its preferred time is sold out, and the only clue in the markup is a missing pointer cursor. It clicks, nothing happens, and it clicks again. This is the worst case we saw. Most detours were one or two wasted clicks.",
       "visual": {
         "type": "guest",
         "dir": "video/build/guest2-classic-1",
@@ -309,7 +309,7 @@
             {
               "label": "Guests who took a detour",
               "value": "24 vs 0",
-              "note": "of 156 on classic and 144 on accessible. Most were one wasted click."
+              "note": "of 156 on classic and 144 on accessible. Most were one or two wasted actions."
             },
             {
               "label": "Prompt tokens per step",
@@ -387,7 +387,7 @@
     },
     {
       "id": "skill",
-      "say": "The skill is small on purpose. Its instructions are about sixteen hundred tokens, and its commands print one fact per line. A fresh agent, given only the skill and the app, ran the whole job in fifteen tool calls.",
+      "say": "The skill is small on purpose. Its instructions are about sixteen hundred tokens, and its commands print one fact per line. A fresh agent, working from the skill and a short prompt, ran the whole job in fifteen tool calls.",
       "visual": {
         "type": "card",
         "template": "stats",
@@ -470,7 +470,8 @@
                   "note": "in the registered experiment: +13.6%"
                 }
               ],
-              "banner": "All six runs, 840 guests: 45 of 418 wasted an action on classic.<br>On accessible, 0 of 422."
+              "banner": "All six runs, 840 guests: 45 of 418 wasted an action on classic.<br>On accessible, 0 of 422.",
+              "foot": "In the second rerun the accessible form was dealt the longer briefs, so its raw step count came out higher. That rerun also had the only wrong booking of all six runs, on the classic form."
             }
           }
         ]

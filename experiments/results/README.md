@@ -37,7 +37,7 @@ Every guest reached the form, made exactly one booking, and got it right. The ve
   > "Time still shows 'Not chosen yet'; I'll try clicking 1:00 PM again to select it."
 
   Of the 36 classic guests whose preferred time was sold out, 20 clicked a sold-out time at least once. The other 16 did not click one: the guests' instructions say that `[cursor=pointer]` marks what looks clickable, and guests who give a reason say the time is "not clickable". Of the 35 accessible guests in the same position, none clicked one: there the same time reads `radio "1:00 PM" [disabled]`.
-- **The other 4 were the guest stepper.** Its plus and minus have no names on the classic form, and each of these guests pressed the wrong one first, at a cost of two actions. From [prod1_g0097](transcripts/prod1_g0097.json):
+- **The other 4 were the guest stepper.** Its plus and minus have no names on the classic form. Each of these guests, part of the way up to its number, pressed minus once and had to press plus again: two actions. From [prod1_g0097](transcripts/prod1_g0097.json):
 
   > "Guests still shows 5 after clicking e73; let me try the other button e71 to change the count."
   > "Guest count is 4 but I need 6, so I'll click the plus button to increase it."
@@ -54,7 +54,7 @@ The 24 detours cost 52 actions, a third of an action per classic guest. All of t
 
 The registered experiment is one run. Five others used the same set-up: a pilot and two skill tests before it, and two runs of the one-command demo after it, 540 guests in all. None of them is part of the registered analysis. In every one, no accessible guest wasted an action and some classic guests did: over all six runs, 45 of 418 on the classic form and 0 of 422 on the accessible form. The token cost was higher on the accessible form every time, by 16% to 29%. The only wrong booking in 840 guests was on the classic form.
 
-Raw steps did not repeat: the difference changes sign between runs, because the number of actions a guest takes depends mostly on the brief it drew. In the second demo run the accessible form drew longer briefs and Flagsmith reported the steps guardrail as breached, with no wasted action on that form. The table, and what we would register differently next time, are in the [main README](../../README.md#the-other-runs).
+Raw steps did not repeat: the difference changes sign between runs, because the number of actions a guest takes depends mostly on the brief it drew. In the second demo run the accessible form drew longer briefs and the steps guardrail came out as breached, with no wasted action on that form. The table, and what we would register differently next time, are in the [main README](../../README.md#the-other-runs).
 
 ## Bounds on the booking rate
 

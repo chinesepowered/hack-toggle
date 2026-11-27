@@ -48,7 +48,7 @@ These lines are real: two of the four metrics of the experiment this skill was b
 - Metrics are printed in the order the experiment lists them, which is the order of the spec. The first is the primary and is the one `ship` judges.
 - `lift` is the relative change against the control; the bracket is Flagsmith's 95% credible interval.
 - `chance` is Flagsmith's chance to beat the control, already oriented by the metric's direction (for a lower-is-better metric, a drop is a win).
-- The numbers are Flagsmith's. The verdict word is `fx` applying Flagsmith's documented thresholds to `chance`: for a goal, 95% or more is `WINNING` and 5% or less is `LOSING`; a guardrail is `BREACHED` only at 5% or less. `ship` asks for a fresh computation and judges that.
+- The numbers are Flagsmith's. The verdict word is `fx` applying Flagsmith's documented thresholds to `chance`: for a goal, 95% or more is `WINNING` and 5% or less is `LOSING`; a guardrail is `BREACHED` only at 5% or less. `ship` asks for a fresh computation first. If Flagsmith throttles it, `ship` says so and judges the last computed results.
 - `collecting data` means a variation has fewer than 50 identities or 5 conversions; Flagsmith computes nothing below that.
 - Refreshes are limited to one every 5 minutes. A throttled refresh prints a note and the last computed results.
 
