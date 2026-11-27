@@ -95,6 +95,8 @@ table.verdict small{display:block;font-size:21px;font-weight:600;color:#7a6555}
 .tiles{display:flex;gap:22px;margin-top:22px}
 .tiles>div{flex:1;background:#fffdf8;border:2px solid #e7d9c4;border-radius:20px;padding:12px 22px}
 .tiles b{display:block;font-size:28px}.tiles span{font-size:23px;color:#7a6555}
+.tiles.big>div{padding:22px 28px}.tiles.big small{display:block;font-size:24px;font-weight:700;color:#b5651a;margin-bottom:4px}
+.tiles.big b{font-size:36px}.tiles.big span{font-size:28px}
 .term .note{color:#fff;font-weight:700}
 .foot{margin-top:18px;font-size:25px;color:#7a6555}
 `;
@@ -175,6 +177,23 @@ const TEMPLATES = {
         ? `<div class="tiles">${metrics.map((m, i) => `<div><b>${esc(m.name)}</b><span>${i ? '' : 'primary · '}should ${esc(m.expected.replace('_', ' '))}</span></div>`).join('')}</div>`
         : ''
     }</div></div>`);
+  },
+
+  // What was registered before the run: the spec's metrics with their expected
+  // directions, sentences quoted from the pre-registration (for each quote, the
+  // line of `file` that contains `find`), and a line of evidence.
+  registered: ({ heading, spec, file, quotes = [], banner }) => {
+    const metrics = JSON.parse(text(spec)).metrics;
+    const lines = text(file).split('\n');
+    const quote = ({ who, tone, find }) => {
+      const line = lines.find((l) => l.includes(find));
+      if (!line) throw new Error(`"${find}" not found in ${file}`);
+      const plain = line.replace(/^[-*] /, '').replace(/[*`]/g, '').trim();
+      return `<div class="quote"><span class="chip ${tone || ''}">${esc(who)}</span><span>&ldquo;${esc(plain)}&rdquo;</span></div>`;
+    };
+    return page(`<div class="pad"><h2>${esc(heading)}</h2><div class="tiles big" style="margin-top:0">${metrics
+      .map((m, i) => `<div><small>H${i + 1}${i ? '' : ', primary'}</small><b>${esc(m.name)}</b><span>should ${esc(m.expected.replace('_', ' '))}</span></div>`)
+      .join('')}</div>${quotes.map(quote).join('')}${banner ? `<div class="banner" style="margin:auto 0 30px">${banner}</div>` : ''}</div>`);
   },
 
   // The output of `fx results`, laid out as a table so it can be read at video size.

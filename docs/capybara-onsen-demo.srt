@@ -23,197 +23,237 @@ To a person, the new version looks exactly the same.
 Not one pixel is different.
 
 7
-00:00:20,619 --> 00:00:23,241
+00:00:20,619 --> 00:00:23,369
 But an AI agent does not look at pixels.
 
 8
-00:00:23,241 --> 00:00:25,339
+00:00:23,369 --> 00:00:25,570
 It reads the accessibility tree.
 
 9
-00:00:25,339 --> 00:00:29,207
+00:00:25,570 --> 00:00:29,627
 And there, the two versions could hardly be more different:
 
 10
-00:00:29,207 --> 00:00:33,993
+00:00:29,627 --> 00:00:34,646
 unnamed controls on one side, buttons with names and states on the other.
 
 11
-00:00:34,893 --> 00:00:38,716
-So before the upgrade goes to everyone, one question.
+00:00:35,546 --> 00:00:38,631
+So what does the upgrade do to the AI guests?
 
 12
-00:00:38,716 --> 00:00:41,096
-What does it do to the AI guests?
+00:00:38,631 --> 00:00:41,099
+We started out expecting it to help.
 
 13
-00:00:41,096 --> 00:00:42,755
-We expected it to help.
+00:00:41,099 --> 00:00:46,171
+Two small pilots disagreed: every guest booked correctly on both versions.
 
 14
-00:00:42,755 --> 00:00:46,361
-Instead of arguing about it, we ran an experiment.
+00:00:46,171 --> 00:00:50,352
+So before the real run, we registered a different prediction:
 
 15
-00:00:47,261 --> 00:00:51,032
-Both versions sit behind one Flagsmith feature flag,
+00:00:50,352 --> 00:00:53,231
+bookings will hold, and tokens will go up.
 
 16
-00:00:51,032 --> 00:00:54,078
-on a Flagsmith instance we host ourselves.
+00:00:54,131 --> 00:00:57,724
+Both versions sit behind one Flagsmith feature flag.
 
 17
-00:00:54,078 --> 00:00:59,735
+00:00:57,724 --> 00:01:03,114
 A Flagsmith experiment splits the guests fifty-fifty and watches four metrics:
 
 18
-00:00:59,735 --> 00:01:03,797
+00:01:03,114 --> 00:01:06,983
 correct bookings, completed bookings, steps, and tokens.
 
 19
-00:01:04,697 --> 00:01:08,338
-The guests are language models driving real browsers.
+00:01:07,883 --> 00:01:11,670
+The guests are language models driving real browsers,
 
 20
-00:01:08,338 --> 00:01:13,765
-Each one gets a booking to make, and no hint about which version it was served.
+00:01:11,670 --> 00:01:15,242
+with no hint about which version they were served.
 
 21
-00:01:13,765 --> 00:01:16,169
+00:01:15,242 --> 00:01:17,742
 Watch this one on the classic form.
 
 22
-00:01:16,169 --> 00:01:20,703
-Its preferred time is sold out, but nothing in the markup says so.
+00:01:17,742 --> 00:01:19,957
+Its preferred time is sold out,
 
 23
-00:01:20,703 --> 00:01:24,001
-It clicks, nothing happens, and it clicks again.
+00:01:19,957 --> 00:01:24,244
+and the only clue in the markup is a missing pointer cursor.
 
 24
-00:01:24,901 --> 00:01:28,935
-On the accessible form, the same time is marked as disabled.
+00:01:24,244 --> 00:01:27,673
+It clicks, nothing happens, and it clicks again.
 
 25
-00:01:28,935 --> 00:01:33,103
-The guest reads that, and goes straight to the next free slot.
+00:01:27,673 --> 00:01:29,816
+This is the worst case we saw.
 
 26
-00:01:34,003 --> 00:01:36,812
-The experiment itself is run by a coding agent,
+00:01:29,816 --> 00:01:32,674
+Most detours were a single wasted click.
 
 27
-00:01:36,812 --> 00:01:39,980
-using a skill we built on the Flagsmith command line.
+00:01:33,574 --> 00:01:37,428
+On the accessible form, the same time is marked as disabled.
 
 28
-00:01:39,980 --> 00:01:44,104
-Before anything goes live, it checks that every event really arrives,
+00:01:37,428 --> 00:01:41,410
+The guest reads that, and goes straight to the next free slot.
 
 29
-00:01:44,104 --> 00:01:46,673
-and that every user still gets the control.
+00:01:42,310 --> 00:01:45,119
+The experiment itself is run by a coding agent,
 
 30
-00:01:46,673 --> 00:01:50,199
-Then it stops, and waits for a person to approve the start.
+00:01:45,119 --> 00:01:48,287
+using a skill we built on the Flagsmith command line.
 
 31
-00:01:51,099 --> 00:01:54,443
-Three hundred guests later, this is Flagsmith's analysis.
+00:01:48,287 --> 00:01:52,410
+Before anything goes live, it checks that every event really arrives,
 
 32
-00:01:55,343 --> 00:01:59,539
-Correct bookings: 156 out of 156 on the classic form,
+00:01:52,410 --> 00:01:54,980
+and that every user still gets the control.
 
 33
-00:01:59,539 --> 00:02:02,785
-and 144 out of 144 on the accessible one.
+00:01:54,980 --> 00:01:58,506
+Then it stops, and waits for a person to approve the start.
 
 34
-00:02:02,785 --> 00:02:04,448
-No difference at all.
+00:01:59,406 --> 00:02:02,750
+Three hundred guests later, this is Flagsmith's analysis.
 
 35
-00:02:04,448 --> 00:02:06,427
-Steps went down a little.
+00:02:03,650 --> 00:02:07,846
+Correct bookings: 156 out of 156 on the classic form,
 
 36
-00:02:06,427 --> 00:02:10,861
-But tokens per guest went up by almost fourteen percent,
+00:02:07,846 --> 00:02:11,092
+and 144 out of 144 on the accessible one.
 
 37
-00:02:10,861 --> 00:02:13,315
-and that guardrail is breached.
+00:02:11,092 --> 00:02:12,755
+No difference at all.
 
 38
-00:02:14,215 --> 00:02:14,533
-Why?
+00:02:12,755 --> 00:02:14,734
+Steps went down a little.
 
 39
-00:02:14,533 --> 00:02:17,949
-A capable agent recovers from its mistakes,
+00:02:14,734 --> 00:02:19,168
+But tokens per guest went up by almost fourteen percent,
 
 40
-00:02:17,949 --> 00:02:21,285
-so the bookings come out right either way.
+00:02:19,168 --> 00:02:21,622
+and that guardrail is breached.
 
 41
-00:02:21,285 --> 00:02:25,654
-But on the classic form, 24 guests took a detour first.
+00:02:22,522 --> 00:02:22,840
+Why?
 
 42
-00:02:25,654 --> 00:02:28,275
-On the accessible form, none did.
+00:02:22,840 --> 00:02:26,256
+A capable agent recovers from its mistakes,
 
 43
-00:02:28,275 --> 00:02:33,915
-And yet the accessible page takes longer to read, on every single step.
+00:02:26,256 --> 00:02:29,592
+so the bookings come out right either way.
 
 44
-00:02:33,915 --> 00:02:36,218
-Fewer mistakes, more reading.
+00:02:29,592 --> 00:02:33,961
+But on the classic form, 24 guests took a detour first.
 
 45
-00:02:36,218 --> 00:02:37,569
-The reading wins.
+00:02:33,961 --> 00:02:36,582
+On the accessible form, none did.
 
 46
-00:02:38,469 --> 00:02:41,791
-So when the agent tries to ship, the skill refuses.
+00:02:36,582 --> 00:02:42,222
+And yet the accessible page takes longer to read, on every single step.
 
 47
-00:02:41,791 --> 00:02:44,136
-A breached guardrail needs a person.
+00:02:42,222 --> 00:02:44,525
+Fewer mistakes, more reading.
 
 48
-00:02:44,136 --> 00:02:47,523
-A person was shown the result and accepted the cost:
+00:02:44,525 --> 00:02:45,876
+The reading wins.
 
 49
-00:02:47,523 --> 00:02:51,170
-the upgrade is for people, and agents book just as well.
+00:02:46,776 --> 00:02:50,323
+So when the agent tries to ship, the skill refuses.
 
 50
-00:02:51,170 --> 00:02:53,515
-Flagsmith rolled it out to everyone.
+00:02:50,323 --> 00:02:52,826
+A breached guardrail needs a person.
 
 51
-00:02:54,415 --> 00:02:56,343
-And you can check it yourself.
+00:02:52,826 --> 00:02:56,443
+A person was shown the result and accepted the cost:
 
 52
-00:02:56,343 --> 00:03:00,135
-On a fresh clone, one command starts open-source Flagsmith,
+00:02:56,443 --> 00:03:00,337
+the upgrade is for people, and agents book just as well.
 
 53
-00:03:00,135 --> 00:03:03,606
-the booking site, and a hundred and twenty new guests.
+00:03:00,337 --> 00:03:02,841
+Flagsmith rolled it out to everyone.
 
 54
-00:03:03,606 --> 00:03:06,562
-Seven minutes later, it gives the same answer.
+00:03:03,741 --> 00:03:05,593
+The skill is small on purpose.
 
 55
-00:03:07,462 --> 00:03:11,772
-One experiment, an answer we did not expect, and a result nobody scripted.
+00:03:05,593 --> 00:03:08,681
+Its instructions are about sixteen hundred tokens,
+
+56
+00:03:08,681 --> 00:03:11,212
+and its commands print one fact per line.
+
+57
+00:03:11,212 --> 00:03:14,176
+A fresh agent, given only the skill and the app,
+
+58
+00:03:14,176 --> 00:03:16,646
+ran the whole job in fifteen tool calls.
+
+59
+00:03:17,546 --> 00:03:19,476
+And you can check it yourself.
+
+60
+00:03:19,476 --> 00:03:23,273
+On a fresh clone, one command starts open-source Flagsmith,
+
+61
+00:03:23,273 --> 00:03:26,749
+the booking site, and a hundred and twenty new guests.
+
+62
+00:03:26,749 --> 00:03:27,778
+We ran it twice.
+
+63
+00:03:27,778 --> 00:03:31,576
+Both times, no guest on the accessible form wasted a click,
+
+64
+00:03:31,576 --> 00:03:33,506
+and the token bill was higher.
+
+65
+00:03:34,406 --> 00:03:39,657
+One experiment, a prediction registered in advance, and a result nobody scripted.

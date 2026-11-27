@@ -11,6 +11,6 @@ Tool calls, tokens and time are the totals reported by the agent harness for the
 
 Each log has the prompt as it was given, every command the agent ran with the start of its output, and the agent's report. The agent's private reasoning and the harness's own bookkeeping messages are left out, the common prefix of the commands is removed, and the path of a scratch folder is shortened to `<scratch>`. Nothing else is edited.
 
-Between the two tests we rewrote `SKILL.md` and parts of `fx` from the first agent's report. The second agent needed 11 fewer tool calls, mostly because it no longer had to look things up outside the skill.
+Between the two tests we rewrote `SKILL.md` and parts of `fx` from the first agent's report. The second agent needed 11 fewer tool calls: it made no exploratory checks (`fx --help`, listing files, reading the spec) and fewer status calls.
 
-The tallies of the guests in each test are in [experiments/staging](../../experiments/staging): `skilldemo-main-1126` is test 1 and `skill-demo2-main-213102` is test 2.
+The guests' transcripts and tallies for each test are in [experiments/other-runs](../../experiments/other-runs), as `skill-test-1` and `skill-test-2`.

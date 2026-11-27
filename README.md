@@ -8,9 +8,9 @@ Capybara Onsen is a hot-spring booking site with two versions of its booking for
 
 A Flagsmith experiment splits AI guests between the two versions and counts correct bookings, completed bookings, steps and tokens. Each guest is a language model operating a real browser, so nobody types in a conversion rate. The result is whatever the agents do.
 
-> **Result, from 300 AI guests.** Every guest made a correct booking on both versions: 156 of 156 on classic, 144 of 144 on accessible. On the classic form 24 guests took a detour first, usually one or two wasted clicks on a sold-out time that the form marks only by how it looks. On the accessible form none did. But the accessible form cost 13.6% more tokens per guest, which breached a guardrail, so the tooling refused to ship it until a person accepted that cost. A person did, and it shipped. This is the outcome we had registered in advance. Details under [Results](#results).
+> **Result, from 300 AI guests.** Every guest made a correct booking on both versions: 156 of 156 on classic, 144 of 144 on accessible. On the classic form 24 guests took a detour first, usually one or two wasted clicks on a sold-out time that the form marks only by how it looks. On the accessible form none did. But the accessible form cost 13.6% more tokens per guest, which breached a guardrail, so the tooling refused to ship it until a person accepted that cost. A person did, and it shipped. This is the outcome we had registered in advance. Five other runs on the same set-up agree: of 840 guests in all, 45 of 418 on the classic form wasted at least one action, and none of 422 on the accessible form did. Details under [Results](#results).
 
-**Demo video, three and a half minutes:** [docs/capybara-onsen-demo.mp4](docs/capybara-onsen-demo.mp4), with captions in [docs/capybara-onsen-demo.srt](docs/capybara-onsen-demo.srt).
+**Demo video, 3 minutes 40 seconds:** [docs/capybara-onsen-demo.mp4](docs/capybara-onsen-demo.mp4), with captions in [docs/capybara-onsen-demo.srt](docs/capybara-onsen-demo.srt).
 
 Built for [Toggle Wars: The Flagsmith Experimentation Hackathon](https://www.wemakedevs.org/hackathons/flagsmith). One project, entered in all four tracks; see [The four tracks](#the-four-tracks).
 
@@ -99,18 +99,25 @@ The start, the refused attempt and the ship are the three lines of [experiments/
 
 ### The other runs
 
-Four runs in Staging were used to debug the harness, size the experiment and test the skill. They are not the registered experiment. They agree with it on bookings and on tokens. The difference in steps is small and changes sign from run to run.
+Five other runs used the same final set-up: a pilot and the two skill tests in Staging before the experiment, and two runs of the one-command demo from fresh clones after it. They are not the registered experiment. In each cell the classic form comes first.
 
-| Run | Guests | Correct, classic | Correct, accessible | Actions per guest | Tokens per guest |
+| Run | Guests | Correct bookings | Guests who wasted an action | Actions the briefs needed | Tokens per guest |
 |---|---|---|---|---|---|
-| Pilot 1 | 80 | 46 of 46 | 34 of 34 | 12.4 and 13.0 | 38,473 and 47,458 (+23%) |
-| Pilot 2 | 60 | 25 of 25 | 35 of 35 | 11.7 and 11.5 | 31,630 and 37,414 (+18%) |
-| Skill test 1 | 120 | 63 of 63 | 57 of 57 | 11.8 and 12.0 | 31,902 and 38,954 (+22%) |
-| Skill test 2 | 120 | 55 of 55 | 65 of 65 | 12.2 and 11.8 | 32,915 and 38,215 (+16%) |
+| Pilot 2 | 60 | 25 of 25, 35 of 35 | 3 of 25, 0 of 35 | 11.56, 11.51 | 31,630, 37,414 (+18%) |
+| Skill test 1 | 120 | 63 of 63, 57 of 57 | 4 of 63, 0 of 57 | 11.75, 11.98 | 31,902, 38,954 (+22%) |
+| Skill test 2 | 120 | 55 of 55, 65 of 65 | 6 of 55, 0 of 65 | 11.98, 11.75 | 32,915, 38,215 (+16%) |
+| **The registered experiment** | 300 | 156 of 156, 144 of 144 | 24 of 156, 0 of 144 | 11.48, 11.27 | 32,091, 36,465 (+14%) |
+| Demo run 1 | 120 | 61 of 61, 59 of 59 | 3 of 61, 0 of 59 | 11.92, 11.80 | 32,503, 38,384 (+18%) |
+| Demo run 2 | 120 | 57 of 58, 62 of 62 | 5 of 58, 0 of 62 | 11.45, 12.24 | 31,045, 39,943 (+29%) |
+| All six | 840 | 417 of 418, 422 of 422 | 45 of 418, 0 of 422 | | |
 
-Pilot 1 ran before two fixes to our own set-up, which is why its numbers are higher: the guests were shown Playwright's raw element references, whose format changes between pages, and several accessible controls carried an `aria-label` that only repeated their visible text. The two skill tests were run end to end by a fresh agent using the skill (see [The four tracks](#the-four-tracks)). The tallies of all four runs are in [experiments/staging](experiments/staging).
+Three things hold in every run: no accessible guest wasted an action, some classic guests did, and the accessible form cost more tokens. The one wrong booking in 840 was on the classic form. That guest selected its preferred time, which was free, then decided it was sold out and booked a later one.
 
-After the experiment, the one-command demo below was run from a fresh clone, on a new Flagsmith instance, with 120 new guests. It gave the same pattern again: 61 of 61 and 59 of 59 correct bookings, and 18.1% more tokens per guest on the accessible form, with the token guardrail breached. Its output is in [docs/demo-run.txt](docs/demo-run.txt).
+Raw steps are a different matter. How many actions a guest takes depends mostly on its brief, and the briefs are dealt at random. In demo run 2 the accessible form drew longer briefs (12.24 actions needed, against 11.45), so its guests took more steps and Flagsmith reported the steps guardrail as breached, although none of them wasted an action. The token difference in that run is inflated in the same way. In the registered experiment the draw went slightly the other way. Counting the actions beyond what a brief needs takes that luck out, and that is the column above. We registered raw steps, so raw steps are what the experiment reports. Next time we would register the wasted actions.
+
+A first pilot of 80 guests is not in the table. It ran before two fixes to our own set-up: the guests were shown Playwright's raw element references, whose format changes between pages, and several accessible controls carried an `aria-label` that only repeated their visible text. Bookings were correct there too (46 of 46 and 34 of 34), but most guests on both versions wasted actions.
+
+The transcripts and tallies of all these runs are in [experiments/other-runs](experiments/other-runs), and `node scripts/detours.mjs` recomputes the table from them. The two skill tests were run end to end by a fresh agent (see [The four tracks](#the-four-tracks)). The two demo runs are the last two of three attempts: the first failed early because a leftover process of ours was holding the site's port, which `demo.sh` now checks for.
 
 ## How Flagsmith is used
 
@@ -138,7 +145,7 @@ The guests need a model that follows instructions well, and an endpoint that acc
 ./scripts/demo.sh
 ```
 
-That one command starts Flagsmith, creates the admin account, project and environments, starts the booking site, sets the experiment up, rehearses it, runs the pre-launch check, starts it in Staging, sends 120 AI guests through it, and prints Flagsmith's results. From a fresh clone it took about eight minutes, most of it the guests, on a machine that already had the Docker images and Chromium; [docs/demo-run.txt](docs/demo-run.txt) is the output of such a run. It never ships, and it leaves the experiment running in Staging. To decide, in the same terminal:
+That one command starts Flagsmith, creates the admin account, project and environments, starts the booking site, sets the experiment up, rehearses it, runs the pre-launch check, starts it in Staging, sends 120 AI guests through it, and prints Flagsmith's results. From a fresh clone it took 6 minutes 56 seconds, most of it the guests, on a machine that already had the Docker images and Chromium. [docs/demo-run.txt](docs/demo-run.txt) is the output of that run, which is demo run 2 in the table above. It never ships, and it leaves the experiment running in Staging. To decide, in the same terminal:
 
 ```bash
 source .flagsmith/flagsmith.env    # the CLI's login for the local instance, with Staging as its environment
@@ -164,9 +171,9 @@ The dashboard is at http://localhost:8000, and the login is in `.flagsmith/state
 |---|---|
 | `app/` | The booking site. `public/booking.js` draws both versions of the form from one renderer. |
 | `guests/` | The AI guests: the agent loop, seeded booking briefs, the audit, and the runner. |
-| `experiments/` | The experiment spec, the pre-registration, the results with every guest's transcript, and the tallies of the Staging runs. |
+| `experiments/` | The experiment spec, the pre-registration, the results with every guest's transcript, and the transcripts and tallies of the other runs. |
 | `skills/flagsmith-experiment/` | The Agent Skill: `SKILL.md`, the `fx` script, and a reference. |
-| `scripts/` | Instance bootstrap, the one-command demo, the parity check, the report generator. |
+| `scripts/` | Instance bootstrap, the one-command demo, the parity check, the report generator, the detour analysis. |
 | `test/` | Unit tests for the booking rules and the audit. |
 | `video/` | The demo video's script and the pipeline that builds it. |
 | `docs/` | The demo video, images, the output of a demo run, the logs of the two skill tests, and [notes for the Flagsmith team](docs/flagsmith-feedback.md). |
@@ -198,7 +205,7 @@ Experimentation is in beta, and building on it turned up three things worth know
 - One guest model, one way of perceiving pages (the accessibility snapshot, no screenshots), and one form. A weaker model, or an agent that works from screenshots, may behave differently.
 - The form echoes every selection as text in a summary card, so state is readable in both versions. A form without that echo would test the classic version harder.
 - Correct bookings sit at 100% in both versions, so this experiment can show that the accessible form does no harm to bookings. It cannot show that it helps. The hypothesis was registered without a margin for "no harm", and the 300 guests were not chosen from a power calculation; what they can exclude is in the exact bounds in the [results](experiments/results/README.md).
-- Steps and tokens are measured by the guest harness and sent to Flagsmith as events after the run. Only the exposure and `booking_completed` come from the site itself.
+- Steps and tokens are measured by the guest harness and sent to Flagsmith as events after the run. Only the exposure and `booking_completed` come from the site itself. Both also depend on the brief a guest happened to draw, which adds noise; see [The other runs](#the-other-runs).
 - The token cost falls on whoever runs the agent, not on the site. It matters to a site only as far as cheaper visits make agents likelier to finish.
 - The approval gate is a rule the tooling enforces and records, not access control: `fx` writes down the name it is given, and the sandbox list is an environment variable. On a shared instance it should sit on top of Flagsmith's own change requests and permissions.
 

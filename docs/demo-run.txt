@@ -1,5 +1,11 @@
+# Output of ./scripts/demo.sh, run from a fresh clone on 27 November 2026 with
+# COMPOSE_PROJECT_NAME=capy-clean, so that it used a new Flagsmith instance next
+# to the one that holds our experiment. The machine already had the Docker
+# images and Playwright's Chromium. Nothing below these lines is edited, except
+# that the clone's own path is shortened to "." in one line.
 
-added 90 packages in 862ms
+
+added 90 packages in 725ms
 ==> 1/6 Flagsmith
  Network capy-clean_default Creating 
  Volume capy-clean_pgdata Creating 
@@ -30,8 +36,8 @@ added 90 packages in 862ms
 ==> 2/6 bootstrap
 Flagsmith 2.295.2 at http://localhost:8000, experimentation enabled
 Created admin account admin@example.com
-Environment Staging: key G2CQHC2shPcTTVTjLcq33e, warehouse connected
-Environment Production: key 3zndiEFxVSL5rzRhex9UDJ, warehouse connected
+Environment Staging: key 7rGf5w95zTYSRpU5uXasAZ, warehouse connected
+Environment Production: key ZVi4wNHuYmmSweNg9XWVkt, warehouse connected
 Created an organisation API key for the CLI
 
 Dashboard: http://localhost:8000  (login admin@example.com, password in .flagsmith/state.json)
@@ -54,28 +60,34 @@ ok    event 'guest_steps' has been received here before
 ok    event 'guest_tokens' has been received here before
 ok    nothing has changed for users yet: 20 of 20 probe identities get the control (classic)
 ready. This environment is listed in FX_UNATTENDED_ENVS, so no approval is needed: fx start
-experiment id=1 status=running started=2026-11-27T00:50:57.564214Z
+experiment id=1 status=running started=2026-11-27T01:54:39.744188Z
 recorded in data/logs/demo-approvals.log
-live: both versions are being served (10 control / 10 variation of 20 probe identities)
+live: both versions are being served (13 control / 7 variation of 20 probe identities)
 next: when traffic flows, fx status should show exposures on both sides. When the planned traffic has finished: fx results
-==> 5/6 120 AI guests (about 5 seconds each; log: data/logs/demo1127004854.log)
+==> 5/6 120 AI guests (about 5 seconds each; log: data/logs/demo1127015239.log)
 Harness tally (a cross-check; Flagsmith computes the experiment result):
 ┌────────────┬────────┬───────────┬─────────┬─────────────┬───────────┬──────────────┬─────────────┐
 │ (index)    │ guests │ completed │ correct │ completed % │ correct % │ mean actions │ mean tokens │
 ├────────────┼────────┼───────────┼─────────┼─────────────┼───────────┼──────────────┼─────────────┤
-│ accessible │ 59     │ 59        │ 59      │ '100.0'     │ '100.0'   │ 11.8         │ 38384       │
-│ classic    │ 61     │ 61        │ 61      │ '100.0'     │ '100.0'   │ 12.05        │ 32503       │
+│ accessible │ 62     │ 62        │ 62      │ '100.0'     │ '100.0'   │ 12.24        │ 39943       │
+│ classic    │ 58     │ 58        │ 57      │ '100.0'     │ '98.3'    │ 11.57        │ 31045       │
 └────────────┴────────┴───────────┴─────────┴─────────────┴───────────┴──────────────┴─────────────┘
-Transcripts: ./data/runs/demo1127004854
+Transcripts: ./data/runs/demo1127015239
 ==> 6/6 results
-Booking correct (primary)  control 61/61 100%  accessible 59/59 100%  lift +0% [+0%, +0%]  chance 50%  guardrail ok
-Booking completed  control 61/61 100%  accessible 59/59 100%  lift +0% [+0%, +0%]  chance 50%  guardrail ok
-Guest steps  control n=61 mean 12.05  accessible n=59 mean 11.8  lift -2.1% [-6.9%, +2.7%]  chance 80.5%  guardrail ok
-Guest tokens  control n=61 mean 32502.62  accessible n=59 mean 38384.07  lift +18.1% [+11.8%, +24.4%]  chance 0%  GUARDRAIL BREACHED
-sample ratio: ok (control 61 / variation 59, expected 50/50, p=0.855)
-as of 2026-11-27T00:56:26.291268Z
+Booking correct (primary)  control 57/58 98.3%  accessible 62/62 100%  lift +1.8% [-1.7%, +5.3%]  chance 83.7%  guardrail ok
+Booking completed  control 58/58 100%  accessible 62/62 100%  lift +0% [+0%, +0%]  chance 50%  guardrail ok
+Guest steps  control n=58 mean 11.57  accessible n=62 mean 12.24  lift +5.8% [+1%, +10.7%]  chance 0.9%  GUARDRAIL BREACHED
+Guest tokens  control n=58 mean 31045.29  accessible n=62 mean 39943.19  lift +28.7% [+22.3%, +35.1%]  chance 0%  GUARDRAIL BREACHED
+sample ratio: ok (control 58 / variation 62, expected 50/50, p=0.715)
+as of 2026-11-27T01:59:33.252249Z
 next: check the counts add up to the traffic you sent, save these lines, then fx ship --winner KEY|control. If it refuses: fx stop
 
+Done in 6 min 56 s. Nothing has been shipped: the experiment is still running in Staging.
 Dashboard: http://localhost:8000 (login in .flagsmith/state.json)
-Decide:    skills/flagsmith-experiment/scripts/fx ship --flag booking_form --winner accessible --approved-by NAME
-       or  skills/flagsmith-experiment/scripts/fx stop --flag booking_form
+Site:      it stopped with this script. Start it again with: npm run app
+Decide, in this terminal:
+  source .flagsmith/flagsmith.env
+  skills/flagsmith-experiment/scripts/fx stop --flag booking_form
+  skills/flagsmith-experiment/scripts/fx ship --flag booking_form --winner accessible --approved-by "Your name"
+       (ship is refused while a guardrail is breached; add --force only to accept that cost)
+Start over from nothing: npm run flagsmith:reset

@@ -132,19 +132,46 @@
     },
     {
       "id": "question",
-      "say": "So before the upgrade goes to everyone, one question. What does it do to the AI guests? We expected it to help. Instead of arguing about it, we ran an experiment.",
+      "say": "So what does the upgrade do to the AI guests? We started out expecting it to help. Two small pilots disagreed: every guest booked correctly on both versions. So before the real run, we registered a different prediction: bookings will hold, and tokens will go up.",
       "visual": {
-        "type": "card",
-        "template": "title",
-        "data": {
-          "title": "Does the upgrade help the AI guests, or hurt them?",
-          "sub": "We expected it to help. So we tested it."
-        }
+        "type": "cards",
+        "cards": [
+          {
+            "weight": 85,
+            "template": "title",
+            "data": {
+              "title": "Does the upgrade help the AI guests, or hurt them?",
+              "sub": "We expected it to help."
+            }
+          },
+          {
+            "weight": 180,
+            "template": "registered",
+            "data": {
+              "heading": "Registered before the run",
+              "spec": "experiments/booking_form.json",
+              "file": "experiments/HYPOTHESIS.md",
+              "quotes": [
+                {
+                  "who": "prediction",
+                  "tone": "teal",
+                  "find": "Our prediction"
+                },
+                {
+                  "who": "decision rule",
+                  "tone": "orange",
+                  "find": "Ship the accessible version if H1 and H2 hold"
+                }
+              ],
+              "banner": "Committed on 26 November at 21:07 UTC. The experiment started at 23:49 UTC."
+            }
+          }
+        ]
       }
     },
     {
       "id": "flag",
-      "say": "Both versions sit behind one Flagsmith feature flag, on a Flagsmith instance we host ourselves. A Flagsmith experiment splits the guests fifty-fifty and watches four metrics: correct bookings, completed bookings, steps, and tokens.",
+      "say": "Both versions sit behind one Flagsmith feature flag. A Flagsmith experiment splits the guests fifty-fifty and watches four metrics: correct bookings, completed bookings, steps, and tokens.",
       "visual": {
         "type": "card",
         "template": "crops",
@@ -172,7 +199,7 @@
     },
     {
       "id": "guest-classic",
-      "say": "The guests are language models driving real browsers. Each one gets a booking to make, and no hint about which version it was served. Watch this one on the classic form. Its preferred time is sold out, but nothing in the markup says so. It clicks, nothing happens, and it clicks again.",
+      "say": "The guests are language models driving real browsers, with no hint about which version they were served. Watch this one on the classic form. Its preferred time is sold out, and the only clue in the markup is a missing pointer cursor. It clicks, nothing happens, and it clicks again. This is the worst case we saw. Most detours were a single wasted click.",
       "visual": {
         "type": "guest",
         "dir": "video/build/guest2-classic-1",
@@ -265,7 +292,7 @@
         "type": "card",
         "template": "verdict",
         "data": {
-          "heading": "Flagsmith's verdict, read by the skill",
+          "heading": "Flagsmith's analysis, with the skill's verdict",
           "file": "experiments/results/log/5-results.txt"
         }
       }
@@ -282,10 +309,10 @@
             {
               "label": "Guests who took a detour",
               "value": "24 vs 0",
-              "note": "of 156 on classic and 144 on accessible"
+              "note": "of 156 on classic and 144 on accessible. Most were one wasted click."
             },
             {
-              "label": "Tokens to read one page",
+              "label": "Prompt tokens per step",
               "value": "+22%",
               "note": "2,897 on accessible against 2,381 on classic"
             },
@@ -375,12 +402,12 @@
             {
               "label": "Tokens of output, whole job",
               "value": "~600",
-              "note": "about 2,500 characters across seven commands in the production run"
+              "note": "about 2,500 characters: set-up, check, start, status, results, a refused ship and the ship"
             },
             {
               "label": "Tool calls, fresh agent, whole job",
               "value": "15",
-              "note": "104,707 tokens in total, counting the agent’s own prompt, its reading of the app and its report"
+              "note": "104,707 tokens in total, counting the agent’s own system prompt on every turn and its report"
             }
           ],
           "banner": "Set up. Check. Start, when a person approves. Read. Ship, when a person approves.",
@@ -401,27 +428,57 @@
     },
     {
       "id": "rerun",
-      "say": "And you can check it yourself. On a fresh clone, one command starts open-source Flagsmith, the booking site, and a hundred and twenty new guests. Seven minutes later, it gives the same answer.",
+      "say": "And you can check it yourself. On a fresh clone, one command starts open-source Flagsmith, the booking site, and a hundred and twenty new guests. We ran it twice. Both times, no guest on the accessible form wasted a click, and the token bill was higher.",
       "visual": {
-        "type": "card",
-        "template": "terminal",
-        "data": {
-          "heading": "One command reruns the whole experiment",
-          "size": 20,
-          "parts": [
-            {
-              "cmd": "./scripts/demo.sh",
-              "file": "docs/demo-run.txt",
-              "match": "^==> |  control |^sample ratio"
+        "type": "cards",
+        "cards": [
+          {
+            "weight": 150,
+            "template": "terminal",
+            "data": {
+              "heading": "One command reruns the whole experiment",
+              "size": 24,
+              "parts": [
+                {
+                  "cmd": "./scripts/demo.sh",
+                  "file": "docs/demo-run.txt",
+                  "match": "^==> |^Done in"
+                }
+              ],
+              "foot": "The step lines of a run from a fresh clone, on a new Flagsmith instance. Full output: docs/demo-run.txt"
             }
-          ],
-          "foot": "Shown: the step and result lines of a run from a fresh clone, on a new Flagsmith instance, in 7 min 34 s. Full output: docs/demo-run.txt"
-        }
+          },
+          {
+            "weight": 125,
+            "template": "stats",
+            "data": {
+              "heading": "We reran it twice, from fresh clones",
+              "items": [
+                {
+                  "label": "Wasted an action, classic",
+                  "value": "8 of 119",
+                  "note": "3 of 61 and 5 of 58"
+                },
+                {
+                  "label": "Wasted an action, accessible",
+                  "value": "0 of 121",
+                  "note": "0 of 59 and 0 of 62"
+                },
+                {
+                  "label": "Tokens per guest, accessible",
+                  "value": "+18%, +29%",
+                  "note": "in the registered experiment: +13.6%"
+                }
+              ],
+              "banner": "All six runs, 840 guests: 45 of 418 wasted an action on classic.<br>On accessible, 0 of 422."
+            }
+          }
+        ]
       }
     },
     {
       "id": "close",
-      "say": "One experiment, an answer we did not expect, and a result nobody scripted.",
+      "say": "One experiment, a prediction registered in advance, and a result nobody scripted.",
       "hold": 1.2,
       "visual": {
         "type": "card",

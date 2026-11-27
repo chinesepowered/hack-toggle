@@ -1,0 +1,36 @@
+{
+  "runId": "demo1127015239",
+  "env": "staging",
+  "model": "Qwen/Qwen3.8-27B",
+  "seed": 1,
+  "start": 0,
+  "n": 120,
+  "today": "2026-11-27",
+  "maxSteps": 40,
+  "temperature": 0.7,
+  "finishedAt": "2026-11-27T01:59:32.249Z",
+  "byVersion": {
+    "accessible": {
+      "guests": 62,
+      "completed": 62,
+      "correct": 62,
+      "completedRate": 1,
+      "correctRate": 1,
+      "meanActions": 12.24,
+      "meanTokens": 39943,
+      "problems": {}
+    },
+    "classic": {
+      "guests": 58,
+      "completed": 58,
+      "correct": 57,
+      "completedRate": 1,
+      "correctRate": 0.9828,
+      "meanActions": 11.57,
+      "meanTokens": 31045,
+      "problems": {
+        "wrong time": 1
+      }
+    }
+  }
+}

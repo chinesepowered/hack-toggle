@@ -50,6 +50,12 @@ The 24 detours cost 52 actions, a third of an action per classic guest. All of t
 
 **The accessible form costs more to read.** Its accessibility snapshot is longer: 2,897 prompt tokens per turn against 2,381, which is 22% more. Accessible guests needed slightly fewer turns (12.3 against 12.9) and wrote less on each one (75 completion tokens against 113), but that does not make up for the longer pages. The net is 13.6% more tokens per guest.
 
+## The same pattern in five other runs
+
+The registered experiment is one run. Five others used the same set-up: a pilot and two skill tests before it, and two runs of the one-command demo after it, 540 guests in all. None of them is part of the registered analysis. In every one, no accessible guest wasted an action and some classic guests did: over all six runs, 45 of 418 on the classic form and 0 of 422 on the accessible form. The token cost was higher on the accessible form every time, by 16% to 29%. The only wrong booking in 840 guests was on the classic form.
+
+Raw steps did not repeat: the difference changes sign between runs, because the number of actions a guest takes depends mostly on the brief it drew. In the second demo run the accessible form drew longer briefs and Flagsmith reported the steps guardrail as breached, with no wasted action on that form. The table, and what we would register differently next time, are in the [main README](../../README.md#the-other-runs).
+
 ## Bounds on the booking rate
 
 Flagsmith's interval for both booking metrics is `[+0%, +0%]`. It comes from a normal approximation, which has no width when every identity converts, so it overstates what 300 guests can show. The lower limits of exact (Clopper-Pearson) two-sided 95% intervals for each version's correct-booking rate are 97.7% for classic (156 of 156) and 97.5% for accessible (144 of 144). What the data support is that each version fails fewer than about 1 guest in 40, and that any difference between them is smaller than that.
