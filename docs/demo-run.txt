@@ -2,7 +2,9 @@
 # COMPOSE_PROJECT_NAME=capy-clean, so that it used a new Flagsmith instance next
 # to the one that holds our experiment. The machine already had the Docker
 # images and Playwright's Chromium. Nothing below these lines is edited, except
-# that the clone's own path is shortened to "." in one line.
+# that the clone's own path is shortened to "." in one line. The script has
+# changed a little since: it now retries the pre-launch check, and the commands
+# it prints at the end carry --log.
 
 
 added 90 packages in 725ms
