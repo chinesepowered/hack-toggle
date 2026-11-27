@@ -52,9 +52,25 @@ The 24 detours cost 52 actions, a third of an action per classic guest. All of t
 
 ## The same pattern in five other runs
 
-The registered experiment is one run. Five others used the same set-up: a pilot and two skill tests before it, and two runs of the one-command demo after it, 540 guests in all. None of them is part of the registered analysis. In every one, no accessible guest wasted an action and some classic guests did: over all six runs, 45 of 418 on the classic form and 0 of 422 on the accessible form. The token cost was higher on the accessible form every time, by 16% to 29%. The only wrong booking in 840 guests was on the classic form.
+The registered experiment is one run. Five others used the same final set-up: a pilot and the two skill tests in Staging before it, and two runs of the one-command demo from fresh clones after it. None of them is part of the registered analysis. In each cell the classic form comes first.
 
-Raw steps did not repeat: the difference changes sign between runs, because the number of actions a guest takes depends mostly on the brief it drew. In the second demo run the accessible form drew longer briefs and the steps guardrail came out as breached, with no wasted action on that form. The table, and what we would register differently next time, are in the [main README](../../README.md#the-other-runs).
+| Run | Guests | Correct bookings | Guests who wasted an action | Actions the briefs needed | Tokens per guest |
+|---|---|---|---|---|---|
+| Pilot 2 | 60 | 25 of 25, 35 of 35 | 3 of 25, 0 of 35 | 11.56, 11.51 | 31,630, 37,414 (+18%) |
+| Skill test 1 | 120 | 63 of 63, 57 of 57 | 4 of 63, 0 of 57 | 11.75, 11.98 | 31,902, 38,954 (+22%) |
+| Skill test 2 | 120 | 55 of 55, 65 of 65 | 6 of 55, 0 of 65 | 11.98, 11.75 | 32,915, 38,215 (+16%) |
+| **The registered experiment** | 300 | 156 of 156, 144 of 144 | 24 of 156, 0 of 144 | 11.48, 11.27 | 32,091, 36,465 (+14%) |
+| Demo run 1 | 120 | 61 of 61, 59 of 59 | 3 of 61, 0 of 59 | 11.92, 11.80 | 32,503, 38,384 (+18%) |
+| Demo run 2 | 120 | 57 of 58, 62 of 62 | 5 of 58, 0 of 62 | 11.45, 12.24 | 31,045, 39,943 (+29%) |
+| All six | 840 | 417 of 418, 422 of 422 | 45 of 418, 0 of 422 | | |
+
+Three things hold in every run: no accessible guest wasted an action, some classic guests did, and the accessible form cost more tokens. The one wrong booking in 840 was on the classic form. That guest selected its preferred time, which was free, then decided it was sold out and booked a later one.
+
+Raw steps are a different matter. How many actions a guest takes depends mostly on its brief, and the briefs are dealt at random. In demo run 2 the accessible form drew longer briefs (12.24 actions needed, against 11.45), so its guests took more steps and the steps guardrail came out as breached, although none of them wasted an action. The token difference in that run is inflated in the same way. In the registered experiment the draw went slightly the other way. Counting the actions beyond what a brief needs takes that luck out, and that is the column above. We registered raw steps, so raw steps are what the experiment reports. Next time we would register the wasted actions.
+
+A first pilot of 80 guests is not in the table. It ran before two fixes to our own set-up: the guests were shown Playwright's raw element references, whose format changes between pages, and several accessible controls carried an `aria-label` that only repeated their visible text. Bookings were correct there too (46 of 46 and 34 of 34), but most guests on both versions wasted actions.
+
+The two skill tests and the two demo runs used the same 120 briefs, dealt to the two versions differently each time, so the 840 guests worked through 480 distinct briefs. The transcripts and tallies of all these runs are in [../other-runs](../other-runs), and `node scripts/detours.mjs` recomputes the table from them. The two demo runs are the last two of three attempts: the first failed early because a leftover process of ours was holding the site's port, which `demo.sh` now checks for.
 
 ## Bounds on the booking rate
 
@@ -82,6 +98,14 @@ rolled out: 20 of 20 probe identities now get 'accessible'
 ```
 
 The start, the refused attempt and the ship are the three lines of [../approvals.tsv](../approvals.tsv). The accessible form is now what every visitor gets.
+
+## What this experiment cannot show
+
+- It used one guest model, one way of perceiving pages (the accessibility snapshot, no screenshots) and one form. A weaker model, or an agent that works from screenshots, may behave differently.
+- The form echoes every selection as text in a summary card, so state is readable in both versions. A form without that echo would test the classic version harder.
+- Correct bookings sit at 100% in both versions, so the experiment can show that the accessible form does no harm to bookings, and cannot show that it helps. The hypothesis was registered without a margin for "no harm", and the 300 guests were not chosen from a power calculation. What they can exclude is in the bounds above.
+- Steps and tokens are measured by the guest harness and sent to Flagsmith as events after the run. Only the exposure and `booking_completed` come from the site itself.
+- The token cost falls on whoever runs the agent, not on the site. It matters to a site only as far as cheaper visits make agents likelier to finish.
 
 ## What was not registered
 

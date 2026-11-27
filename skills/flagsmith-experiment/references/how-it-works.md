@@ -58,6 +58,7 @@ A sample ratio mismatch means the split you got is not the split you configured,
 
 ## Limits
 
+- The approval gate is a rule `fx` enforces and records, not access control: it writes down the name it is given, and the sandbox list is an environment variable. On a shared instance, put it on top of Flagsmith's own change requests and permissions.
 - One variation per experiment (control plus one). Flagsmith supports more; `fx` does not.
 - One unfinished experiment per flag and environment, which is Flagsmith's own rule.
 - `fx` reads the project from the CLI's context (`flagsmith.json` or `FLAGSMITH_PROJECT`).
